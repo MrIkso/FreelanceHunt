@@ -72,7 +72,9 @@
                             app:cardElevation="0dp"
                             app:cardUseCompatPadding="false">
 
-                            <include layout="@layout/placeholder_freelancer" />
+                            <include
+                                android:id="@+id/placeholder_freelancer"
+                                layout="@layout/placeholder_freelancer" />
 
                             <androidx.constraintlayout.widget.ConstraintLayout
                                 android:id="@+id/content"

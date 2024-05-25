@@ -1,38 +1,10 @@
-apply plugin: 'com.novoda.build-properties'
-
-buildscript {
-    ext {
-        kotlinVersion = KOTLIN_VERSION
-        coroutinesVersion = COROUTINES_VERSION
-        koinVersion = KOIN_VERSION
-        retrofitVersion = RETROFIT_VERSION
-        roomVersion = ROOM_VERSION
-        okhttp3LogInterceptor = OKHTTP3LOGINTERCEPTOR_VERSION
-        architectureComponents = ARHITECTURECOMPONENTS_VERSION
-        workVersion = WORK_VERSION
-        preferencesVersion = PREFERENCES_VERSION
-        billingVersion = BILLING_VERSION
-    }
-    repositories {
-        google()
-        jcenter()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:3.6.3'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
-        classpath "com.novoda:gradle-build-properties-plugin:0.4.1"
-    }
+plugins {
+    alias libs.plugins.android.application apply false
+    alias libs.plugins.android.library apply false
+    alias libs.plugins.jetbrains.kotlin.android apply false
+    alias libs.plugins.jetbrains.kotlin.kapt apply false
 }
 
-allprojects {
-    repositories {
-        google()
-        jcenter()
-        maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
-        maven { url 'https://jitpack.io' }
-    }
-}
-
-task clean(type: Delete) {
+tasks.register('clean', Delete) {
     delete rootProject.buildDir
 }

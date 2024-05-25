@@ -1,0 +1,31 @@
+apply plugin: 'com.android.library'
+//apply plugin: 'bintray-release'
+
+android {
+    compileSdkVersion Integer.parseInt(ANDROID_COMPILE_SDK_VERSION)
+    namespace "org.sufficientlysecure.htmltextview"
+
+    defaultConfig {
+        minSdkVersion Integer.parseInt(ANDROID_MIN_SDK_VERSION)
+        targetSdkVersion Integer.parseInt(ANDROID_TARGET_SDK_VERSION)
+        versionName "4.0"
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+}
+
+//publish {
+//    userOrg = 'sufficientlysecure'
+//    groupId = 'org.sufficientlysecure'
+//    artifactId = 'html-textview'
+//    publishVersion = android.defaultConfig.versionName
+//    website = 'https://github.com/SufficientlySecure/html-textview'
+//    desc = 'HtmlTextView is an extended TextView component for Android, which can load HTML and converts it into Spannable for displaying it.'
+//}
+
+dependencies {
+    implementation libs.androidx.annotation
+ }

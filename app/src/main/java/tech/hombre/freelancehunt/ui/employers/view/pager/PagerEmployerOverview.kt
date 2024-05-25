@@ -7,14 +7,13 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.RelativeLayout
 import androidx.annotation.Keep
-import kotlinx.android.synthetic.main.fragment_pager_employer_overview.*
 import tech.hombre.domain.model.EmployerDetail
 import tech.hombre.freelancehunt.R
 import tech.hombre.freelancehunt.common.EXTRA_1
+import tech.hombre.freelancehunt.databinding.FragmentPagerEmployerOverviewBinding
 import tech.hombre.freelancehunt.ui.base.BaseFragment
 
-class PagerEmployerOverview : BaseFragment() {
-    override fun getLayout() = R.layout.fragment_pager_employer_overview
+class PagerEmployerOverview : BaseFragment<FragmentPagerEmployerOverviewBinding>(FragmentPagerEmployerOverviewBinding::inflate) {
 
     var details: EmployerDetail.Data? = null
 
@@ -29,22 +28,22 @@ class PagerEmployerOverview : BaseFragment() {
 
     private fun initOverview(details: EmployerDetail.Data) {
         if (!details.attributes.verification.phone) {
-            verificatedPhone.alpha = 0.5f
+            binding.verificatedPhone.alpha = 0.5f
         }
         if (!details.attributes.verification.birth_date) {
-            verificatedBirth.alpha = 0.5f
+            binding.verificatedBirth.alpha = 0.5f
         }
         if (!details.attributes.verification.website) {
-            verificatedSite.alpha = 0.5f
+            binding.verificatedSite.alpha = 0.5f
         }
         if (!details.attributes.verification.wmid) {
-            verificatedBankID.alpha = 0.5f
+            binding.verificatedBankID.alpha = 0.5f
         }
         if (details.attributes.cv_html != null) {
 
-            if (!summary.setHtmlText(details.attributes.cv_html!!)) {
-                val viewId = summary.id
-                overviewFragmentContainer.removeView(summary)
+            if (!binding.summary.setHtmlText(details.attributes.cv_html!!)) {
+                val viewId = binding.summary.id
+                binding.overviewFragmentContainer.removeView(binding.summary)
 
                 val params: RelativeLayout.LayoutParams = RelativeLayout.LayoutParams(
                     RelativeLayout.LayoutParams.MATCH_PARENT,
@@ -80,9 +79,9 @@ class PagerEmployerOverview : BaseFragment() {
                     )
                 }
 
-                overviewFragmentContainer.addView(webView)
+                binding.overviewFragmentContainer.addView(webView)
             }
-        } else summary.text = getString(R.string.no_information)
+        } else binding.summary.text = getString(R.string.no_information)
     }
 
     companion object {

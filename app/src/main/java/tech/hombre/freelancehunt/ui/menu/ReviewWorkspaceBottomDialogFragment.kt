@@ -4,16 +4,14 @@ package tech.hombre.freelancehunt.ui.menu
 import android.content.Context
 import android.os.Bundle
 import androidx.annotation.Keep
-import kotlinx.android.synthetic.main.bottom_menu_review_workspace.*
 import tech.hombre.domain.model.ReviewGrades
 import tech.hombre.freelancehunt.R
 import tech.hombre.freelancehunt.common.EXTRA_1
 import tech.hombre.freelancehunt.common.utils.Utilities
+import tech.hombre.freelancehunt.databinding.BottomMenuReviewWorkspaceBinding
 import tech.hombre.freelancehunt.ui.base.BaseBottomDialogFragment
 
-class ReviewWorkspaceBottomDialogFragment : BaseBottomDialogFragment() {
-
-    override fun getLayout() = R.layout.bottom_menu_review_workspace
+class ReviewWorkspaceBottomDialogFragment : BaseBottomDialogFragment<BottomMenuReviewWorkspaceBinding>(BottomMenuReviewWorkspaceBinding::inflate) {
 
     private var listener: OnReviewDialogSubmitListener? = null
 
@@ -23,21 +21,21 @@ class ReviewWorkspaceBottomDialogFragment : BaseBottomDialogFragment() {
         arguments?.let {
             ids = it.getInt(EXTRA_1, -1)
 
-            payValue.filters = arrayOf(Utilities.InputFilterMinMax(1, 10))
-            requirementsValue.filters = arrayOf(Utilities.InputFilterMinMax(1, 10))
-            definitionValue.filters = arrayOf(Utilities.InputFilterMinMax(1, 10))
-            connectivityValue.filters = arrayOf(Utilities.InputFilterMinMax(1, 10))
+            binding.payValue.filters = arrayOf(Utilities.InputFilterMinMax(1, 10))
+            binding.requirementsValue.filters = arrayOf(Utilities.InputFilterMinMax(1, 10))
+            binding.definitionValue.filters = arrayOf(Utilities.InputFilterMinMax(1, 10))
+            binding.connectivityValue.filters = arrayOf(Utilities.InputFilterMinMax(1, 10))
 
-            buttonSubmit.setOnClickListener {
+            binding.buttonSubmit.setOnClickListener {
                 if (correctInputs()) {
                     listener?.onReviewDialogSubmit(
                         ids,
-                        text.savedText.toString(),
+                        binding.text.savedText.toString(),
                         ReviewGrades(
-                            payValue.text.toString().toInt(),
-                            definitionValue.text.toString().toInt(),
-                            requirementsValue.text.toString().toInt(),
-                            connectivityValue.text.toString().toInt()
+                            binding.payValue.text.toString().toInt(),
+                            binding.definitionValue.text.toString().toInt(),
+                            binding.requirementsValue.text.toString().toInt(),
+                            binding.connectivityValue.text.toString().toInt()
                         )
                     )
                     dismiss()
@@ -51,7 +49,11 @@ class ReviewWorkspaceBottomDialogFragment : BaseBottomDialogFragment() {
     }
 
     private fun correctInputs(): Boolean {
-        return text.savedText.isNotEmpty() && !payValue.text.isNullOrEmpty() && !requirementsValue.text.isNullOrEmpty() && !definitionValue.text.isNullOrEmpty() && !connectivityValue.text.isNullOrEmpty()
+        return binding.text.savedText.isNotEmpty() &&
+                !binding.payValue.text.isNullOrEmpty() &&
+                !binding.requirementsValue.text.isNullOrEmpty() &&
+                !binding.definitionValue.text.isNullOrEmpty() &&
+                !binding.connectivityValue.text.isNullOrEmpty()
     }
 
     interface OnReviewDialogSubmitListener {

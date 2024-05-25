@@ -13,7 +13,9 @@
         android:fitsSystemWindows="true"
         tools:context=".ui.main.view.activities.MainActivity">
 
-        <include layout="@layout/appbar" />
+        <include
+            android:id="@+id/appbar"
+            layout="@layout/appbar" />
 
         <FrameLayout
             android:id="@+id/fragmentContainer"
@@ -22,7 +24,9 @@
             app:layout_behavior="@string/appbar_scrolling_view_behavior" />
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
-    <include layout="@layout/drawer" />
+    <include
+        android:id="@+id/drawerLayout"
+        layout="@layout/drawer" />
 
 </androidx.drawerlayout.widget.DrawerLayout>
 

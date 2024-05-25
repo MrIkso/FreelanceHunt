@@ -4,16 +4,15 @@ package tech.hombre.freelancehunt.ui.menu
 import android.content.Context
 import android.os.Bundle
 import androidx.annotation.Keep
-import kotlinx.android.synthetic.main.bottom_menu_choose_bid.*
+
 import tech.hombre.freelancehunt.R
 import tech.hombre.freelancehunt.common.EXTRA_1
 import tech.hombre.freelancehunt.common.EXTRA_2
+import tech.hombre.freelancehunt.databinding.BottomMenuChooseBidBinding
 import tech.hombre.freelancehunt.ui.base.BaseBottomDialogFragment
 
 
-class ChooseBidBottomDialogFragment : BaseBottomDialogFragment() {
-
-    override fun getLayout() = R.layout.bottom_menu_choose_bid
+class ChooseBidBottomDialogFragment : BaseBottomDialogFragment<BottomMenuChooseBidBinding>(BottomMenuChooseBidBinding::inflate) {
 
     private var listener: OnChooseBidListener? = null
 
@@ -26,12 +25,12 @@ class ChooseBidBottomDialogFragment : BaseBottomDialogFragment() {
             projectId = it.getInt(EXTRA_1, -1)
             bidId = it.getInt(EXTRA_2, -1)
 
-            buttonChooseBid.setOnClickListener {
+            binding.buttonChooseBid.setOnClickListener {
                 if (correctInputs()) {
                     listener?.onBidChoose(
                         projectId,
                         bidId,
-                        comment.savedText.toString()
+                        binding.comment.savedText.toString()
                     )
                     dismiss()
                 } else {
@@ -44,7 +43,7 @@ class ChooseBidBottomDialogFragment : BaseBottomDialogFragment() {
     }
 
     private fun correctInputs(): Boolean {
-        return comment.savedText.isNotEmpty()
+        return binding.comment.savedText.isNotEmpty()
     }
 
     interface OnChooseBidListener {

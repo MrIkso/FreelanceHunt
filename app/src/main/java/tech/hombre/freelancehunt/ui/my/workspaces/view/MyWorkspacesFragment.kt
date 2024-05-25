@@ -5,7 +5,6 @@ import androidx.annotation.Keep
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.github.vivchar.rendererrecyclerviewadapter.*
-import kotlinx.android.synthetic.main.fragment_my_projects.*
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import tech.hombre.domain.model.*
 import tech.hombre.freelancehunt.R
@@ -13,6 +12,7 @@ import tech.hombre.freelancehunt.common.*
 import tech.hombre.freelancehunt.common.extensions.*
 import tech.hombre.freelancehunt.common.widgets.CustomImageView
 import tech.hombre.freelancehunt.common.widgets.EndlessScroll
+import tech.hombre.freelancehunt.databinding.FragmentMyWorkspacesBinding
 import tech.hombre.freelancehunt.ui.base.*
 import tech.hombre.freelancehunt.ui.base.Success
 import tech.hombre.freelancehunt.ui.base.ViewState
@@ -20,15 +20,13 @@ import tech.hombre.freelancehunt.ui.menu.*
 import tech.hombre.freelancehunt.ui.menu.model.MenuItem
 import tech.hombre.freelancehunt.ui.my.workspaces.presentation.MyWorkspacesViewModel
 
-class MyWorkspacesFragment : BaseFragment(), ListMenuBottomDialogFragment.BottomListMenuListener,
+class MyWorkspacesFragment : BaseFragment<FragmentMyWorkspacesBinding>(FragmentMyWorkspacesBinding::inflate), ListMenuBottomDialogFragment.BottomListMenuListener,
     ProposeConditionsBottomDialogFragment.OnConditionsListener,
     SimpleInputBottomDialogFragment.OnDialogSubmitListener,
     CompleteWorkspaceBottomDialogFragment.OnCompleteDialogSubmitListener,
     ReviewWorkspaceBottomDialogFragment.OnReviewDialogSubmitListener {
 
     private val viewModel: MyWorkspacesViewModel by viewModel()
-
-    override fun getLayout() = R.layout.fragment_my_workspaces
 
     lateinit var adapter: RendererRecyclerViewAdapter
 
@@ -62,17 +60,19 @@ class MyWorkspacesFragment : BaseFragment(), ListMenuBottomDialogFragment.Bottom
                 //adapter.setItems(items)
                 viewModel.getMyWorkspacesLists()
             }
+
+            else -> {}
         }
     }
 
     private fun handleError(error: String) {
         hideLoading()
-        showError(error, projectsFragmentContainer)
+        showError(error, binding.projectsFragmentContainer)
     }
 
     private fun showNoInternetError() {
         hideLoading()
-        snackbar(getString(R.string.no_internet_error_message), projectsFragmentContainer)
+        snackbar(getString(R.string.no_internet_error_message), binding.projectsFragmentContainer)
     }
 
     private fun initList() {
@@ -192,15 +192,15 @@ class MyWorkspacesFragment : BaseFragment(), ListMenuBottomDialogFragment.Bottom
                 }
             )
         )
-        list.layoutManager = LinearLayoutManager(context)
-        list.adapter = adapter
+        binding.list.layoutManager = LinearLayoutManager(context)
+        binding.list.adapter = adapter
         adapter.registerRenderer(
             LoadMoreViewBinder(
                 R.layout.item_load_more
             )
         )
 
-        list.addOnScrollListener(object : EndlessScroll() {
+        binding.list.addOnScrollListener(object : EndlessScroll() {
             override fun onLoadMore(page: Int, totalItemsCount: Int) {
                 if (viewModel.pagination.next.isNotEmpty()) {
                     adapter.showLoadMore()
@@ -209,7 +209,7 @@ class MyWorkspacesFragment : BaseFragment(), ListMenuBottomDialogFragment.Bottom
             }
         })
 
-        refresh.setOnRefreshListener {
+        binding.refresh.setOnRefreshListener {
             items.clear()
             //adapter.setItems(items)
             viewModel.getMyWorkspacesLists()
@@ -219,7 +219,7 @@ class MyWorkspacesFragment : BaseFragment(), ListMenuBottomDialogFragment.Bottom
 
     private fun initMyWorkspacesList(projectsList: WorkspacesList) {
         hideLoading()
-        refresh.isRefreshing = false
+        binding.refresh.isRefreshing = false
 
         items.addAll(projectsList.data)
         adapter.setItems(items)

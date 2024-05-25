@@ -4,31 +4,29 @@ import android.os.Bundle
 import android.view.MenuItem
 import androidx.annotation.Keep
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import kotlinx.android.synthetic.main.fragment_main.*
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 import tech.hombre.freelancehunt.R
 import tech.hombre.freelancehunt.common.EXTRA_1
 import tech.hombre.freelancehunt.common.extensions.subscribe
 import tech.hombre.freelancehunt.common.extensions.switch
+import tech.hombre.freelancehunt.databinding.FragmentMainBinding
 import tech.hombre.freelancehunt.ui.base.BaseFragment
 import tech.hombre.freelancehunt.ui.main.presentation.MainPublicViewModel
 
 
-class MainFragment : BaseFragment(), BottomNavigationView.OnNavigationItemSelectedListener {
+class MainFragment : BaseFragment<FragmentMainBinding>(FragmentMainBinding::inflate), BottomNavigationView.OnNavigationItemSelectedListener {
 
     private val sharedViewModelMain: MainPublicViewModel by sharedViewModel()
 
-    override fun getLayout() = R.layout.fragment_main
-
     override fun viewReady() {
         subscribeToData()
-        bottomNavigationView.setOnNavigationItemSelectedListener(this)
+        binding.bottomNavigationView.setOnNavigationItemSelectedListener(this)
         arguments?.let {
             val isFeed = it.getBoolean(EXTRA_1)
-            bottomNavigationView.selectedItemId = if (isFeed) R.id.menu_feed else R.id.menu_projects
+            binding.bottomNavigationView.selectedItemId = if (isFeed) R.id.menu_feed else R.id.menu_projects
         }
-        fab.setOnClickListener {
-            when (bottomNavigationView.selectedItemId) {
+        binding.fab.setOnClickListener {
+            when (binding.bottomNavigationView.selectedItemId) {
                 R.id.menu_projects -> sharedViewModelMain.onFabClickAction("project_filter")
                 R.id.menu_contests -> sharedViewModelMain.onFabClickAction("contest_filter")
             }
@@ -37,8 +35,8 @@ class MainFragment : BaseFragment(), BottomNavigationView.OnNavigationItemSelect
 
     private fun subscribeToData() {
         sharedViewModelMain.feedBadgeCounter.subscribe(this) {
-            val menuItemId = bottomNavigationView.menu.getItem(0).itemId
-            val badgeDrawable = bottomNavigationView.getOrCreateBadge(menuItemId)
+            val menuItemId = binding.bottomNavigationView.menu.getItem(0).itemId
+            val badgeDrawable = binding.bottomNavigationView.getOrCreateBadge(menuItemId)
             if (it > 0) {
                 badgeDrawable.number = it
                 badgeDrawable.isVisible = true
@@ -83,10 +81,10 @@ class MainFragment : BaseFragment(), BottomNavigationView.OnNavigationItemSelect
         when(itemId) {
             //R.id.menu_contests,
             R.id.menu_projects -> {
-                fab.setImageResource(R.drawable.filter)
-                fab.show()
+                binding.fab.setImageResource(R.drawable.filter)
+                binding.fab.show()
             }
-            else -> fab.hide()
+            else -> binding.fab.hide()
         }
     }
 

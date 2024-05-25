@@ -11,26 +11,26 @@ import com.github.vivchar.rendererrecyclerviewadapter.BaseViewRenderer
 import com.github.vivchar.rendererrecyclerviewadapter.RendererRecyclerViewAdapter
 import com.github.vivchar.rendererrecyclerviewadapter.ViewFinder
 import com.github.vivchar.rendererrecyclerviewadapter.ViewRenderer
-import kotlinx.android.synthetic.main.fragment_pager_project_overview.*
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
+import org.koin.androidx.viewmodel.ext.android.viewModel
 import tech.hombre.domain.model.Countries
 import tech.hombre.domain.model.ProjectDetail
 import tech.hombre.freelancehunt.R
 import tech.hombre.freelancehunt.common.EXTRA_1
 import tech.hombre.freelancehunt.common.extensions.*
+import tech.hombre.freelancehunt.databinding.FragmentPagerProjectOverviewBinding
 import tech.hombre.freelancehunt.ui.base.*
 import tech.hombre.freelancehunt.ui.employers.presentation.EmployerDetailViewModel
 import tech.hombre.freelancehunt.ui.project.presentation.ProjectPublicViewModel
 
 
-class PagerProjectOverview : BaseFragment() {
-    override fun getLayout() = R.layout.fragment_pager_project_overview
+class PagerProjectOverview : BaseFragment<FragmentPagerProjectOverviewBinding>(FragmentPagerProjectOverviewBinding::inflate) {
 
     var project: ProjectDetail.Data.Attributes? = null
 
     private val projectPublicViewModel: ProjectPublicViewModel by sharedViewModel()
 
-    private val employerViewModel: EmployerDetailViewModel by sharedViewModel()
+    private val employerViewModel: EmployerDetailViewModel by viewModel()
 
     var countries = listOf<Countries.Data>()
 
@@ -62,12 +62,12 @@ class PagerProjectOverview : BaseFragment() {
 
     private fun handleError(error: String) {
         hideLoading()
-        showError(error, overviewActivityContainer)
+        showError(error, binding.overviewActivityContainer)
     }
 
     private fun showNoInternetError() {
         hideLoading()
-        snackbar(getString(R.string.no_internet_error_message), overviewActivityContainer)
+        snackbar(getString(R.string.no_internet_error_message), binding.overviewActivityContainer)
     }
 
 
@@ -77,9 +77,9 @@ class PagerProjectOverview : BaseFragment() {
             return
         }
 
-        publishedAt.text = details.published_at.parseFullDate(true).getTimeAgo()
+        binding.publishedAt.text = details.published_at.parseFullDate(true).getTimeAgo()
 
-        publishedAt.setOnClickListener {
+        binding.publishedAt.setOnClickListener {
             toast(details.published_at.parseFullDate(true).toString())
         }
 
@@ -98,9 +98,9 @@ class PagerProjectOverview : BaseFragment() {
                 desc.append(update.description_html)
             }
 
-            if (!description.setHtmlText(desc.toString())) {
-                val viewId = description.id
-                overviewActivityContainer.removeView(description)
+            if (!binding.description.setHtmlText(desc.toString())) {
+                val viewId = binding.description.id
+                binding.overviewActivityContainer.removeView(binding.description)
 
                 val params: RelativeLayout.LayoutParams = RelativeLayout.LayoutParams(
                     RelativeLayout.LayoutParams.MATCH_PARENT,
@@ -129,15 +129,15 @@ class PagerProjectOverview : BaseFragment() {
                     webChromeClient = WebChromeClient()
                     loadDataWithBaseURL(null, desc.toString(), "text/html", "ru_RU", null)
                 }
-                overviewActivityContainer.addView(webView, 2)
+                binding.overviewActivityContainer.addView(webView, 2)
             }
-        } else description.text = getString(R.string.no_information)
+        } else binding.description.text = getString(R.string.no_information)
 
-        avatar.setUrl(details.employer!!.avatar.large.url, isCircle = true)
-        name.text = "${details.employer!!.first_name} ${details.employer!!.last_name}"
-        login.text = details.employer!!.login
+        binding.avatar.setUrl(details.employer!!.avatar.large.url, isCircle = true)
+        binding.name.text = "${details.employer!!.first_name} ${details.employer!!.last_name}"
+        binding.login.text = details.employer!!.login
 
-        buttonProfile.setOnClickListener {
+        binding.buttonProfile.setOnClickListener {
             employerViewModel.getEmployerDetails(details.employer!!.id)
         }
     }
@@ -158,7 +158,7 @@ class PagerProjectOverview : BaseFragment() {
                 }
             )
         )
-        skillList.adapter = adapter
+        binding.skillList.adapter = adapter
         adapter.setItems(skills)
     }
 

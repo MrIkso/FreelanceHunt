@@ -5,22 +5,19 @@ import android.content.Context
 import android.os.Bundle
 import androidx.annotation.Keep
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.github.vivchar.rendererrecyclerviewadapter.BaseViewRenderer
 import com.github.vivchar.rendererrecyclerviewadapter.RendererRecyclerViewAdapter
 import com.github.vivchar.rendererrecyclerviewadapter.ViewFinder
 import com.github.vivchar.rendererrecyclerviewadapter.ViewRenderer
-import kotlinx.android.synthetic.main.bottom_menu_list.*
 import tech.hombre.freelancehunt.R
 import tech.hombre.freelancehunt.common.EXTRA_1
 import tech.hombre.freelancehunt.common.EXTRA_2
 import tech.hombre.freelancehunt.common.EXTRA_3
+import tech.hombre.freelancehunt.databinding.BottomMenuListBinding
 import tech.hombre.freelancehunt.ui.base.BaseBottomDialogFragment
 import tech.hombre.freelancehunt.ui.menu.model.MenuItem
 
 
-class ListMenuBottomDialogFragment : BaseBottomDialogFragment() {
-
-    override fun getLayout() = R.layout.bottom_menu_list
+class ListMenuBottomDialogFragment : BaseBottomDialogFragment<BottomMenuListBinding>(BottomMenuListBinding::inflate) {
 
     private var listener: BottomListMenuListener? = null
 
@@ -41,20 +38,24 @@ class ListMenuBottomDialogFragment : BaseBottomDialogFragment() {
             adapter.registerRenderer(
                 ViewRenderer(
                     R.layout.item_menu_item,
-                    MenuItem::class.java,
-                    BaseViewRenderer.Binder { model: MenuItem, finder: ViewFinder, payloads: List<Any?>? ->
-                        finder
-                            .setImageResource(R.id.icon, model.icon)
-                            .setText(R.id.title, model.title)
-                            .setOnClickListener {
-                                listener?.onMenuItemSelected(projectId, bidId, items.indexOf(model), model)
-                                dismiss()
-                            }
-                    }
-                )
+                    MenuItem::class.java
+                ) { model: MenuItem, finder: ViewFinder, payloads: List<Any?>? ->
+                    finder
+                        .setImageResource(R.id.icon, model.icon)
+                        .setText(R.id.title, model.title)
+                        .setOnClickListener {
+                            listener?.onMenuItemSelected(
+                                projectId,
+                                bidId,
+                                items.indexOf(model),
+                                model
+                            )
+                            dismiss()
+                        }
+                }
             )
-            list.layoutManager = LinearLayoutManager(activity)
-            list.adapter = adapter
+            binding.list.layoutManager = LinearLayoutManager(activity)
+            binding.list.adapter = adapter
             adapter.setItems(items)
         }
     }

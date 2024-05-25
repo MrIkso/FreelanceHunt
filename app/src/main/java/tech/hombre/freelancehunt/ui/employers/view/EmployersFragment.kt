@@ -4,7 +4,7 @@ import android.widget.TextView
 import androidx.annotation.Keep
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.github.vivchar.rendererrecyclerviewadapter.*
-import kotlinx.android.synthetic.main.fragment_employers.*
+
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import tech.hombre.domain.model.Countries
 import tech.hombre.domain.model.EmployerDetail
@@ -13,15 +13,14 @@ import tech.hombre.freelancehunt.R
 import tech.hombre.freelancehunt.common.extensions.*
 import tech.hombre.freelancehunt.common.widgets.CustomImageView
 import tech.hombre.freelancehunt.common.widgets.EndlessScroll
+import tech.hombre.freelancehunt.databinding.FragmentEmployersBinding
 import tech.hombre.freelancehunt.ui.base.*
 import tech.hombre.freelancehunt.ui.base.ViewState
 import tech.hombre.freelancehunt.ui.employers.presentation.EmployersViewModel
 import tech.hombre.freelancehunt.ui.menu.BottomMenuBuilder
 import tech.hombre.freelancehunt.ui.menu.EmployersFilterBottomDialogFragment
 
-class EmployersFragment : BaseFragment(), EmployersFilterBottomDialogFragment.OnSubmitEmployersFilter {
-
-    override fun getLayout() = R.layout.fragment_employers
+class EmployersFragment : BaseFragment<FragmentEmployersBinding>(FragmentEmployersBinding::inflate), EmployersFilterBottomDialogFragment.OnSubmitEmployersFilter {
 
     private val viewModel: EmployersViewModel by viewModel()
 
@@ -39,20 +38,21 @@ class EmployersFragment : BaseFragment(), EmployersFilterBottomDialogFragment.On
 
     private fun subscribeToData() {
         viewModel.viewState.subscribe(this, ::handleViewState)
-        viewModel.countries.subscribe(this, {
+        viewModel.countries.subscribe(this) {
             countries = it
-        })
-        viewModel.details.subscribe(this, {
+        }
+        viewModel.details.subscribe(this) {
             when (it) {
                 is Loading -> showLoading()
                 is Success -> {
                     hideLoading()
                     appNavigator.showEmployerDetails(it.data.data)
                 }
+
                 is Error -> handleError(it.error.localizedMessage)
                 is NoInternetState -> showNoInternetError()
             }
-        })
+        }
         viewModel.setCountries()
     }
 
@@ -67,12 +67,12 @@ class EmployersFragment : BaseFragment(), EmployersFilterBottomDialogFragment.On
 
     private fun handleError(error: String) {
         hideLoading()
-        showError(error, employersFragmentContainer)
+        showError(error, binding.employersFragmentContainer)
     }
 
     private fun showNoInternetError() {
         hideLoading()
-        snackbar(getString(R.string.no_internet_error_message), employersFragmentContainer)
+        snackbar(getString(R.string.no_internet_error_message), binding.employersFragmentContainer)
     }
 
 
@@ -135,15 +135,15 @@ class EmployersFragment : BaseFragment(), EmployersFilterBottomDialogFragment.On
                 }
             )
         )
-        list.layoutManager = LinearLayoutManager(activity)
-        list.adapter = adapter
+        binding.list.layoutManager = LinearLayoutManager(activity)
+        binding.list.adapter = adapter
         adapter.registerRenderer(
             LoadMoreViewBinder(
                 R.layout.item_load_more
             )
         )
 
-        list.addOnScrollListener(object : EndlessScroll() {
+        binding.list.addOnScrollListener(object : EndlessScroll() {
             override fun onLoadMore(page: Int, totalItemsCount: Int) {
                 if (items.isNotEmpty() && viewModel.pagination.next.isNotEmpty()) {
                     adapter.showLoadMore()
@@ -152,11 +152,11 @@ class EmployersFragment : BaseFragment(), EmployersFilterBottomDialogFragment.On
             }
         })
 
-        refresh.setOnRefreshListener {
+        binding.refresh.setOnRefreshListener {
             refreshList()
         }
 
-        fab.setOnClickListener {
+        binding.fab.setOnClickListener {
             BottomMenuBuilder(
                 requireContext(),
                 childFragmentManager,
@@ -176,7 +176,7 @@ class EmployersFragment : BaseFragment(), EmployersFilterBottomDialogFragment.On
 
     private fun initEmployersList(freelancersList: EmployersList) {
         hideLoading()
-        refresh.isRefreshing = false
+        binding.refresh.isRefreshing = false
 
         items.addAll(freelancersList.data)
         adapter.setItems(items)

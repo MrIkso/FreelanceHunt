@@ -8,7 +8,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import kotlinx.android.synthetic.main.bottom_menu_freelancers_filter.*
+
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import tech.hombre.data.database.dao.CountriesDao
 import tech.hombre.data.database.dao.SkillsDao
@@ -20,12 +20,11 @@ import tech.hombre.freelancehunt.common.EXTRA_2
 import tech.hombre.freelancehunt.common.EXTRA_3
 import tech.hombre.freelancehunt.common.extensions.launch
 import tech.hombre.freelancehunt.common.extensions.subscribe
+import tech.hombre.freelancehunt.databinding.BottomMenuFreelancersFilterBinding
 import tech.hombre.freelancehunt.framework.app.AppHelper
 import tech.hombre.freelancehunt.ui.base.BaseBottomDialogFragment
 
-class FreelancersFilterBottomDialogFragment : BaseBottomDialogFragment() {
-
-    override fun getLayout() = R.layout.bottom_menu_freelancers_filter
+class FreelancersFilterBottomDialogFragment : BaseBottomDialogFragment<BottomMenuFreelancersFilterBinding>(BottomMenuFreelancersFilterBinding::inflate) {
 
     private val viewModel: FreelancersFilterViewModel by viewModel()
 
@@ -61,7 +60,7 @@ class FreelancersFilterBottomDialogFragment : BaseBottomDialogFragment() {
 
     private fun initViews() {
 
-        skillsList.setOnClickListener {
+        binding.skillsList.setOnClickListener {
             with(
                 AlertDialog.Builder(
                     requireContext(),
@@ -82,7 +81,7 @@ class FreelancersFilterBottomDialogFragment : BaseBottomDialogFragment() {
             }
         }
 
-        countriesList.setOnClickListener {
+        binding.countriesList.setOnClickListener {
             with(
                 AlertDialog.Builder(
                     requireContext(),
@@ -108,7 +107,7 @@ class FreelancersFilterBottomDialogFragment : BaseBottomDialogFragment() {
             }
         }
 
-        citiesList.setOnClickListener {
+        binding.citiesList.setOnClickListener {
             with(
                 AlertDialog.Builder(
                     requireContext(),
@@ -132,7 +131,7 @@ class FreelancersFilterBottomDialogFragment : BaseBottomDialogFragment() {
             }
         }
 
-        buttonSubmit.setOnClickListener {
+        binding.buttonSubmit.setOnClickListener {
             val checked = arrayListOf<Int>()
             checkedSkills.forEachIndexed { index, b ->
                 if (b) {
@@ -147,7 +146,7 @@ class FreelancersFilterBottomDialogFragment : BaseBottomDialogFragment() {
             dismiss()
         }
 
-        citiesList.isEnabled = checkedCountry != -1
+        binding.citiesList.isEnabled = checkedCountry != -1
 
     }
 
@@ -183,26 +182,26 @@ class FreelancersFilterBottomDialogFragment : BaseBottomDialogFragment() {
                         placeholder += skills[index].name + ","
                     }
                 }
-                skillsList.text =
+                binding.skillsList.text =
                     placeholder.removeRange(placeholder.length - 1, placeholder.length)
             } else {
-                skillsList.text = getString(R.string.select)
+                binding.skillsList.text = getString(R.string.select)
             }
         } else if (isCountries) {
             if (checkedCountry > 0) {
-                countriesList.text = countries.find { it.id == checkedCountry }?.name ?: getString(R.string.select)
+                binding.countriesList.text = countries.find { it.id == checkedCountry }?.name ?: getString(R.string.select)
                 viewModel.setCities(checkedCountry)
-                citiesList.text = getString(R.string.select)
-                citiesList.isEnabled = true
+                binding.citiesList.text = getString(R.string.select)
+                binding.citiesList.isEnabled = true
             } else {
-                countriesList.text = getString(R.string.select)
-                citiesList.text = getString(R.string.select)
-                citiesList.isEnabled = false
+                binding.countriesList.text = getString(R.string.select)
+                binding.citiesList.text = getString(R.string.select)
+                binding.citiesList.isEnabled = false
             }
         } else if (isCities) {
-            if (checkedCity > 0) citiesList.text = cities.find { it.id == checkedCity }?.name ?: getString(R.string.select) else {
-                citiesList.text = getString(R.string.select)
-                citiesList.isEnabled = true
+            if (checkedCity > 0)  binding.citiesList.text = cities.find { it.id == checkedCity }?.name ?: getString(R.string.select) else {
+                binding.citiesList.text = getString(R.string.select)
+                binding.citiesList.isEnabled = true
             }
         }
     }

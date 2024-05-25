@@ -7,8 +7,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ProgressBar
 import androidx.fragment.app.Fragment
-import kotlinx.android.synthetic.main.appbar_fill.*
+import androidx.viewbinding.ViewBinding
 import org.koin.android.ext.android.inject
 import org.koin.core.parameter.parametersOf
 import tech.hombre.data.local.LocalProperties
@@ -16,7 +17,13 @@ import tech.hombre.freelancehunt.R
 import tech.hombre.freelancehunt.routing.AppFragmentNavigator
 import tech.hombre.freelancehunt.routing.AppNavigator
 
-abstract class BaseFragment : Fragment() {
+abstract class BaseFragment<VB : ViewBinding>(private val bindingInflater: (inflater: LayoutInflater) -> VB) :
+    Fragment() {
+
+    private var _binding: VB? = null
+
+    val binding: VB
+        get() = _binding as VB
 
     protected val appFragmentNavigator: AppFragmentNavigator by inject { parametersOf(this) }
 
@@ -29,7 +36,15 @@ abstract class BaseFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(getLayout(), container, false)
+        return if (_binding == null) {
+            _binding = bindingInflater.invoke(inflater)
+            return _binding!!.root
+        } else _binding!!.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,22 +62,22 @@ abstract class BaseFragment : Fragment() {
         context.startActivity(Intent.createChooser(browserIntent, context.getString(R.string.open)))
     }
 
-    protected fun onBackPressed() = (activity as BaseActivity).onBackPressed()
+    protected fun onBackPressed() = (activity as BaseActivity<*>).onBackPressed()
 
     abstract fun viewReady()
 
-    abstract fun getLayout(): Int
-
     open fun showError(errorMessage: String?, rootView: View) {
-        (activity as BaseActivity).showError(errorMessage)
+        (activity as BaseActivity<*>).showError(errorMessage)
     }
 
     open fun showLoading() {
-        activity?.progressBar?.let { (activity as BaseActivity).showLoading(it) }
+        binding.root.findViewById<ProgressBar>(R.id.progressBar)
+            ?.let { (activity as BaseActivity<*>).showLoading(it) }
 
     }
 
     open fun hideLoading() {
-        activity?.progressBar?.let { (activity as BaseActivity).hideLoading(it) }
+        binding.root.findViewById<ProgressBar>(R.id.progressBar)
+            ?.let { (activity as BaseActivity<*>).hideLoading(it) }
     }
 }

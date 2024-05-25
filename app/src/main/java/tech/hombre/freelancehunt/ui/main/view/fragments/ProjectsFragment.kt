@@ -6,7 +6,6 @@ import android.view.MenuItem
 import androidx.annotation.Keep
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.github.vivchar.rendererrecyclerviewadapter.*
-import kotlinx.android.synthetic.main.fragment_projects.*
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import tech.hombre.domain.model.ProjectDetail
@@ -16,6 +15,7 @@ import tech.hombre.freelancehunt.common.SafeType
 import tech.hombre.freelancehunt.common.extensions.*
 import tech.hombre.freelancehunt.common.widgets.CustomImageView
 import tech.hombre.freelancehunt.common.widgets.EndlessScroll
+import tech.hombre.freelancehunt.databinding.FragmentProjectsBinding
 import tech.hombre.freelancehunt.ui.base.*
 import tech.hombre.freelancehunt.ui.base.ViewState
 import tech.hombre.freelancehunt.ui.main.presentation.MainPublicViewModel
@@ -24,13 +24,11 @@ import tech.hombre.freelancehunt.ui.menu.BottomMenuBuilder
 import tech.hombre.freelancehunt.ui.menu.ProjectFilterBottomDialogFragment
 
 
-class ProjectsFragment : BaseFragment(), ProjectFilterBottomDialogFragment.OnSubmitProjectFilter {
+class ProjectsFragment : BaseFragment<FragmentProjectsBinding>(FragmentProjectsBinding::inflate), ProjectFilterBottomDialogFragment.OnSubmitProjectFilter {
 
     private val viewModel: ProjectsViewModel by viewModel()
 
     private val publicViewModel: MainPublicViewModel by sharedViewModel()
-
-    override fun getLayout() = R.layout.fragment_projects
 
     lateinit var adapter: RendererRecyclerViewAdapter
 
@@ -93,15 +91,15 @@ class ProjectsFragment : BaseFragment(), ProjectFilterBottomDialogFragment.OnSub
                 }
             )
         )
-        list.layoutManager = LinearLayoutManager(context)
-        list.adapter = adapter
+        binding.list.layoutManager = LinearLayoutManager(context)
+        binding.list.adapter = adapter
         adapter.registerRenderer(
             LoadMoreViewBinder(
                 R.layout.item_load_more
             )
         )
 
-        list.addOnScrollListener(object : EndlessScroll() {
+        binding.list.addOnScrollListener(object : EndlessScroll() {
             override fun onLoadMore(page: Int, totalItemsCount: Int) {
                 if (viewModel.pagination.next.isNotEmpty()) {
                     adapter.showLoadMore()
@@ -110,7 +108,7 @@ class ProjectsFragment : BaseFragment(), ProjectFilterBottomDialogFragment.OnSub
             }
         })
 
-        refresh.setOnRefreshListener {
+        binding.refresh.setOnRefreshListener {
             refreshList()
         }
 
@@ -169,14 +167,14 @@ class ProjectsFragment : BaseFragment(), ProjectFilterBottomDialogFragment.OnSub
     }
 
     private fun handleError(error: String) {
-        refresh.isRefreshing = false
+        binding.refresh.isRefreshing = false
         hideLoading()
-        showError(error, projectsFragmentContainer)
+        showError(error, binding.projectsFragmentContainer)
     }
 
     private fun showNoInternetError() {
         hideLoading()
-        snackbar(getString(R.string.no_internet_error_message), projectsFragmentContainer)
+        snackbar(getString(R.string.no_internet_error_message), binding.projectsFragmentContainer)
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -195,7 +193,7 @@ class ProjectsFragment : BaseFragment(), ProjectFilterBottomDialogFragment.OnSub
 
     private fun initProjectsList(projectsList: ProjectsList) {
         hideLoading()
-        refresh.isRefreshing = false
+        binding.refresh.isRefreshing = false
 
         items.addAll(projectsList.data)
         adapter.setItems(items)

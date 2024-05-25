@@ -5,10 +5,10 @@ import androidx.annotation.Keep
 import tech.hombre.domain.model.FreelancerDetail
 import tech.hombre.freelancehunt.R
 import tech.hombre.freelancehunt.common.EXTRA_1
+import tech.hombre.freelancehunt.databinding.FragmentPagerFreelancerBidsBinding
 import tech.hombre.freelancehunt.ui.base.BaseFragment
 
-class PagerFreelancerBids : BaseFragment() {
-    override fun getLayout() = R.layout.fragment_pager_freelancer_bids
+class PagerFreelancerBids : BaseFragment<FragmentPagerFreelancerBidsBinding>(FragmentPagerFreelancerBidsBinding::inflate) {
 
     private var profileId = 0
 

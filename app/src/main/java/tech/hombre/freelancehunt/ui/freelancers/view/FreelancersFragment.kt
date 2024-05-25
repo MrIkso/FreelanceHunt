@@ -6,7 +6,7 @@ import androidx.annotation.Keep
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.github.vivchar.rendererrecyclerviewadapter.*
-import kotlinx.android.synthetic.main.fragment_freelancers.*
+
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import tech.hombre.domain.model.Countries
 import tech.hombre.domain.model.FreelancerDetail
@@ -15,15 +15,14 @@ import tech.hombre.freelancehunt.R
 import tech.hombre.freelancehunt.common.extensions.*
 import tech.hombre.freelancehunt.common.widgets.CustomImageView
 import tech.hombre.freelancehunt.common.widgets.EndlessScroll
+import tech.hombre.freelancehunt.databinding.FragmentFreelancersBinding
 import tech.hombre.freelancehunt.ui.base.*
 import tech.hombre.freelancehunt.ui.base.ViewState
 import tech.hombre.freelancehunt.ui.freelancers.presentation.FreelancersViewModel
 import tech.hombre.freelancehunt.ui.menu.BottomMenuBuilder
 import tech.hombre.freelancehunt.ui.menu.FreelancersFilterBottomDialogFragment
 
-class FreelancersFragment : BaseFragment(), FreelancersFilterBottomDialogFragment.OnSubmitFreelancersFilter {
-
-    override fun getLayout() = R.layout.fragment_freelancers
+class FreelancersFragment : BaseFragment<FragmentFreelancersBinding>(FragmentFreelancersBinding::inflate), FreelancersFilterBottomDialogFragment.OnSubmitFreelancersFilter {
 
     private val viewModel: FreelancersViewModel by viewModel()
 
@@ -59,12 +58,12 @@ class FreelancersFragment : BaseFragment(), FreelancersFilterBottomDialogFragmen
 
     private fun handleError(error: String) {
         hideLoading()
-        showError(error, freelancersFragmentContainer)
+        showError(error, binding.freelancersFragmentContainer)
     }
 
     private fun showNoInternetError() {
         hideLoading()
-        snackbar(getString(R.string.no_internet_error_message), freelancersFragmentContainer)
+        snackbar(getString(R.string.no_internet_error_message), binding.freelancersFragmentContainer)
     }
 
 
@@ -133,15 +132,15 @@ class FreelancersFragment : BaseFragment(), FreelancersFilterBottomDialogFragmen
                 }
             )
         )
-        list.layoutManager = LinearLayoutManager(activity)
-        list.adapter = adapter
+        binding.list.layoutManager = LinearLayoutManager(activity)
+        binding.list.adapter = adapter
         adapter.registerRenderer(
             LoadMoreViewBinder(
                 R.layout.item_load_more
             )
         )
 
-        list.addOnScrollListener(object : EndlessScroll() {
+        binding.list.addOnScrollListener(object : EndlessScroll() {
             override fun onLoadMore(page: Int, totalItemsCount: Int) {
                 if (viewModel.pagination.next.isNotEmpty()) {
                     adapter.showLoadMore()
@@ -150,11 +149,11 @@ class FreelancersFragment : BaseFragment(), FreelancersFilterBottomDialogFragmen
             }
         })
 
-        refresh.setOnRefreshListener {
+        binding.refresh.setOnRefreshListener {
             refreshList()
         }
 
-        fab.setOnClickListener {
+        binding.fab.setOnClickListener {
             BottomMenuBuilder(
                 requireContext(),
                 childFragmentManager,
@@ -175,7 +174,7 @@ class FreelancersFragment : BaseFragment(), FreelancersFilterBottomDialogFragmen
 
     private fun initFreelancersList(freelancersList: FreelancersList) {
         hideLoading()
-        refresh.isRefreshing = false
+        binding.refresh.isRefreshing = false
 
         items.addAll(freelancersList.data)
         adapter.setItems(items)

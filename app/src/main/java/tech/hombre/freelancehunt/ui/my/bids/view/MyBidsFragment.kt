@@ -6,7 +6,7 @@ import androidx.annotation.Keep
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.github.vivchar.rendererrecyclerviewadapter.*
-import kotlinx.android.synthetic.main.fragment_my_bids.*
+
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import tech.hombre.domain.model.MyBidsList
 import tech.hombre.freelancehunt.R
@@ -15,6 +15,7 @@ import tech.hombre.freelancehunt.common.ProjectStatus
 import tech.hombre.freelancehunt.common.UserType
 import tech.hombre.freelancehunt.common.extensions.*
 import tech.hombre.freelancehunt.common.widgets.EndlessScroll
+import tech.hombre.freelancehunt.databinding.FragmentMyBidsBinding
 import tech.hombre.freelancehunt.ui.base.*
 import tech.hombre.freelancehunt.ui.base.ViewState
 import tech.hombre.freelancehunt.ui.menu.BottomMenuBuilder
@@ -22,7 +23,7 @@ import tech.hombre.freelancehunt.ui.menu.ListMenuBottomDialogFragment
 import tech.hombre.freelancehunt.ui.menu.model.MenuItem
 import tech.hombre.freelancehunt.ui.my.bids.presentation.MyBidsViewModel
 
-class MyBidsFragment : BaseFragment(), ListMenuBottomDialogFragment.BottomListMenuListener {
+class MyBidsFragment : BaseFragment<FragmentMyBidsBinding>(FragmentMyBidsBinding::inflate), ListMenuBottomDialogFragment.BottomListMenuListener {
 
     private val viewModel: MyBidsViewModel by viewModel()
 
@@ -35,8 +36,6 @@ class MyBidsFragment : BaseFragment(), ListMenuBottomDialogFragment.BottomListMe
         subscribeToData()
         viewModel.getMyBids(1)
     }
-
-    override fun getLayout() = R.layout.fragment_my_bids
 
     private fun subscribeToData() {
         viewModel.viewState.subscribe(this, ::handleViewState)
@@ -69,6 +68,8 @@ class MyBidsFragment : BaseFragment(), ListMenuBottomDialogFragment.BottomListMe
             is Success -> {
                 updateBid(viewState.data)
             }
+
+            else -> {}
         }
     }
 
@@ -80,12 +81,12 @@ class MyBidsFragment : BaseFragment(), ListMenuBottomDialogFragment.BottomListMe
 
     private fun handleError(error: String) {
         hideLoading()
-        showError(error, bidsFragmentContainer)
+        showError(error, binding.bidsFragmentContainer)
     }
 
     private fun showNoInternetError() {
         hideLoading()
-        snackbar(getString(R.string.no_internet_error_message), bidsFragmentContainer)
+        snackbar(getString(R.string.no_internet_error_message), binding.bidsFragmentContainer)
     }
 
     private fun initList() {
@@ -163,15 +164,15 @@ class MyBidsFragment : BaseFragment(), ListMenuBottomDialogFragment.BottomListMe
                 }
             )
         )
-        list.layoutManager = LinearLayoutManager(activity)
-        list.adapter = adapter
+        binding.list.layoutManager = LinearLayoutManager(activity)
+        binding.list.adapter = adapter
         adapter.registerRenderer(
             LoadMoreViewBinder(
                 R.layout.item_load_more
             )
         )
 
-        list.addOnScrollListener(object : EndlessScroll() {
+        binding.list.addOnScrollListener(object : EndlessScroll() {
             override fun onLoadMore(page: Int, totalItemsCount: Int) {
                 if (viewModel.pagination.next.isNotEmpty()) {
                     adapter.showLoadMore()
@@ -180,19 +181,19 @@ class MyBidsFragment : BaseFragment(), ListMenuBottomDialogFragment.BottomListMe
             }
         })
 
-        refresh.setOnRefreshListener {
+        binding.refresh.setOnRefreshListener {
             items.clear()
             adapter.setItems(items)
             viewModel.getMyBids(1)
         }
 
-        bidsRevoked.setOnClickListener {
+        binding.bidsRevoked.setOnClickListener {
             setFilter("revoked")
         }
-        bidsActive.setOnClickListener {
+        binding.bidsActive.setOnClickListener {
             setFilter("active")
         }
-        bidsRejected.setOnClickListener {
+        binding.bidsRejected.setOnClickListener {
             setFilter("rejected")
         }
     }
@@ -205,7 +206,7 @@ class MyBidsFragment : BaseFragment(), ListMenuBottomDialogFragment.BottomListMe
 
     private fun initMyBidsList(freelancersList: MyBidsList) {
         hideLoading()
-        refresh.isRefreshing = false
+        binding.refresh.isRefreshing = false
 
         val reversed = appPreferences.getProjectBidsListReversed()
         val itemsList = if (reversed) freelancersList.data.reversed() else freelancersList.data

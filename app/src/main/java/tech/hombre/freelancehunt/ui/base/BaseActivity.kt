@@ -7,12 +7,14 @@ import android.content.ContextWrapper
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.widget.ProgressBar
 import androidx.annotation.IdRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ShareCompat
+import androidx.viewbinding.ViewBinding
 import com.bumptech.glide.Glide
-import kotlinx.android.synthetic.main.drawer.*
+import com.google.android.material.navigation.NavigationView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
@@ -34,7 +36,12 @@ import tech.hombre.freelancehunt.routing.AppNavigator
 import tech.hombre.freelancehunt.ui.main.view.activities.MainActivity
 import tech.hombre.freelancehunt.ui.main.view.fragments.MainFragment
 
-abstract class BaseActivity : AppCompatActivity() {
+abstract class BaseActivity <VB : ViewBinding>(private val bindingInflater: (inflater: LayoutInflater) -> VB): AppCompatActivity() {
+
+    private var _binding: VB? = null
+
+    val binding: VB
+        get() = _binding as VB
 
     protected val appNavigator: AppNavigator by inject { parametersOf(this) }
 
@@ -105,6 +112,10 @@ abstract class BaseActivity : AppCompatActivity() {
         AppHelper.updateTheme(this, appPreferences.getAppTheme())
         AppHelper.updateAppLanguage(this, appPreferences.getAppLanguage())
         super.onCreate(savedInstanceState)
+         if (_binding == null) {
+            _binding = bindingInflater.invoke(layoutInflater)
+        }
+        setContentView(binding.root)
         if (!isPublic && !validateAuth()) {
             return
         } else viewReady()
@@ -141,7 +152,7 @@ abstract class BaseActivity : AppCompatActivity() {
     }
 
     fun selectMenuItem(@IdRes id: Int, check: Boolean) {
-        navigation?.let {
+        findViewById<NavigationView>(R.id.navigation)?.let {
             it.menu.findItem(id)?.let { item ->
                 with(item) {
                     isCheckable = check

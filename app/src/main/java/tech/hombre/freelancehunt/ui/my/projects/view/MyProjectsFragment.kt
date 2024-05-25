@@ -4,7 +4,6 @@ import android.app.DatePickerDialog
 import androidx.annotation.Keep
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.github.vivchar.rendererrecyclerviewadapter.*
-import kotlinx.android.synthetic.main.fragment_my_projects.*
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import tech.hombre.domain.model.MyProjectsList
 import tech.hombre.domain.model.ProjectDetail
@@ -14,6 +13,8 @@ import tech.hombre.freelancehunt.common.SafeType
 import tech.hombre.freelancehunt.common.extensions.*
 import tech.hombre.freelancehunt.common.widgets.CustomImageView
 import tech.hombre.freelancehunt.common.widgets.EndlessScroll
+import tech.hombre.freelancehunt.databinding.FragmentMainBinding
+import tech.hombre.freelancehunt.databinding.FragmentMyProjectsBinding
 import tech.hombre.freelancehunt.ui.base.*
 import tech.hombre.freelancehunt.ui.base.ViewState
 import tech.hombre.freelancehunt.ui.menu.BottomMenuBuilder
@@ -24,13 +25,11 @@ import tech.hombre.freelancehunt.ui.my.projects.presentation.MyProjectsViewModel
 import java.text.SimpleDateFormat
 import java.util.*
 
-class MyProjectsFragment : BaseFragment(), ListMenuBottomDialogFragment.BottomListMenuListener {
+class MyProjectsFragment : BaseFragment<FragmentMyProjectsBinding>(FragmentMyProjectsBinding::inflate), ListMenuBottomDialogFragment.BottomListMenuListener {
 
     private val viewModel: MyProjectsViewModel by viewModel()
 
     private val sharedViewModel: MyProjectSharedViewModel by viewModel()
-
-    override fun getLayout() = R.layout.fragment_my_projects
 
     lateinit var adapter: RendererRecyclerViewAdapter
 
@@ -41,7 +40,7 @@ class MyProjectsFragment : BaseFragment(), ListMenuBottomDialogFragment.BottomLi
         subscribeToData()
         viewModel.getMyProjectsLists()
 
-        addProjectButton.setOnClickListener {
+        binding.addProjectButton.setOnClickListener {
             appNavigator.showNewProjectDialog()
         }
     }
@@ -86,6 +85,8 @@ class MyProjectsFragment : BaseFragment(), ListMenuBottomDialogFragment.BottomLi
                     adapter.notifyItemChanged(position)
                 }
             }
+
+            else -> {}
         }
     }
 
@@ -98,12 +99,12 @@ class MyProjectsFragment : BaseFragment(), ListMenuBottomDialogFragment.BottomLi
 
     private fun handleError(error: String) {
         hideLoading()
-        showError(error, projectsFragmentContainer)
+        showError(error, binding.projectsFragmentContainer)
     }
 
     private fun showNoInternetError() {
         hideLoading()
-        snackbar(getString(R.string.no_internet_error_message), projectsFragmentContainer)
+        snackbar(getString(R.string.no_internet_error_message), binding.projectsFragmentContainer)
     }
 
     private fun initList() {
@@ -160,15 +161,15 @@ class MyProjectsFragment : BaseFragment(), ListMenuBottomDialogFragment.BottomLi
                 }
             )
         )
-        list.layoutManager = LinearLayoutManager(context)
-        list.adapter = adapter
+        binding.list.layoutManager = LinearLayoutManager(context)
+        binding.list.adapter = adapter
         adapter.registerRenderer(
             LoadMoreViewBinder(
                 R.layout.item_load_more
             )
         )
 
-        list.addOnScrollListener(object : EndlessScroll() {
+        binding.list.addOnScrollListener(object : EndlessScroll() {
             override fun onLoadMore(page: Int, totalItemsCount: Int) {
                 if (viewModel.pagination.next.isNotEmpty()) {
                     adapter.showLoadMore()
@@ -177,7 +178,7 @@ class MyProjectsFragment : BaseFragment(), ListMenuBottomDialogFragment.BottomLi
             }
         })
 
-        refresh.setOnRefreshListener {
+        binding.refresh.setOnRefreshListener {
             items.clear()
             adapter.setItems(items)
             viewModel.getMyProjectsLists()
@@ -187,7 +188,7 @@ class MyProjectsFragment : BaseFragment(), ListMenuBottomDialogFragment.BottomLi
 
     private fun initMyProjectsList(projectsList: MyProjectsList) {
         hideLoading()
-        refresh.isRefreshing = false
+        binding.refresh.isRefreshing = false
 
         items.addAll(projectsList.data)
         adapter.setItems(items)

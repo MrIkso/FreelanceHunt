@@ -4,17 +4,15 @@ package tech.hombre.freelancehunt.ui.menu
 import android.content.Context
 import android.os.Bundle
 import androidx.annotation.Keep
-import kotlinx.android.synthetic.main.bottom_menu_simple_input.*
 import tech.hombre.freelancehunt.R
 import tech.hombre.freelancehunt.common.*
 import tech.hombre.freelancehunt.common.extensions.gone
 import tech.hombre.freelancehunt.common.extensions.visible
 import tech.hombre.freelancehunt.common.utils.Utilities
+import tech.hombre.freelancehunt.databinding.BottomMenuSimpleInputBinding
 import tech.hombre.freelancehunt.ui.base.BaseBottomDialogFragment
 
-class SimpleInputBottomDialogFragment : BaseBottomDialogFragment() {
-
-    override fun getLayout() = R.layout.bottom_menu_simple_input
+class SimpleInputBottomDialogFragment : BaseBottomDialogFragment<BottomMenuSimpleInputBinding>(BottomMenuSimpleInputBinding::inflate) {
 
     private var listener: OnDialogSubmitListener? = null
 
@@ -33,23 +31,23 @@ class SimpleInputBottomDialogFragment : BaseBottomDialogFragment() {
             title = it.getString(EXTRA_3, "")
             comment = it.getString(EXTRA_4, "")
 
-            dialogTitle.text = title
-            text.hint = comment
+            binding.dialogTitle.text = title
+            binding.text.hint = comment
 
             if (type == SIMPLE_DIALOG_EXTEND_WORKSPACE) {
-                text.gone()
-                digitInputView.visible()
+                binding.text.gone()
+                binding.digitInputView.visible()
             }
 
-            digit.filters = arrayOf(Utilities.InputFilterMinMax(1, 999))
+            binding.digit.filters = arrayOf(Utilities.InputFilterMinMax(1, 999))
 
-            buttonChooseBid.setOnClickListener {
+            binding.buttonChooseBid.setOnClickListener {
                 if (correctInputs()) {
                     listener?.onDialogSubmit(
                         type,
                         ids,
-                        text.text.toString(),
-                        digit.text.toString().toIntOrNull()
+                        binding.text.text.toString(),
+                        binding.digit.text.toString().toIntOrNull()
                     )
                     dismiss()
                 } else {
@@ -62,7 +60,7 @@ class SimpleInputBottomDialogFragment : BaseBottomDialogFragment() {
     }
 
     private fun correctInputs(): Boolean {
-        return if (type == SIMPLE_DIALOG_EXTEND_WORKSPACE) !digit.text.isNullOrEmpty() else !text.text.isNullOrEmpty()
+        return if (type == SIMPLE_DIALOG_EXTEND_WORKSPACE) !binding.digit.text.isNullOrEmpty() else !binding.text.text.isNullOrEmpty()
     }
 
     interface OnDialogSubmitListener {

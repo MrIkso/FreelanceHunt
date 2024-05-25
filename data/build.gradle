@@ -1,21 +1,20 @@
-apply plugin: 'com.android.library'
-
-apply plugin: 'kotlin-android'
-
-apply plugin: 'kotlin-android-extensions'
-
-apply plugin: 'kotlin-kapt'
+plugins {
+    id 'com.android.library'
+    id 'org.jetbrains.kotlin.android'
+    id 'org.jetbrains.kotlin.plugin.parcelize'
+    id 'org.jetbrains.kotlin.kapt'
+}
 
 android {
     compileSdkVersion Integer.parseInt(ANDROID_COMPILE_SDK_VERSION)
-
+    namespace  = "tech.hombre.data"
 
     defaultConfig {
         minSdkVersion Integer.parseInt(ANDROID_MIN_SDK_VERSION)
         targetSdkVersion Integer.parseInt(ANDROID_TARGET_SDK_VERSION)
-        versionCode Integer.parseInt(VERSION_CODE)
-        versionName VERSION_NAME
         buildConfigField("String", "BASE_URL", "\"https://api.freelancehunt.com/v2/\"")
+        buildConfigField("String", "VERSION_NAME", "\"${VERSION_NAME}\"")
+        buildConfigField("int", "VERSION_CODE", VERSION_CODE)
     }
     kapt {
         arguments {
@@ -30,6 +29,14 @@ android {
         }
     }
 
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+
 }
 
 
@@ -37,21 +44,19 @@ dependencies {
     implementation project(':domain')
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation 'androidx.appcompat:appcompat:1.1.0'
+    implementation libs.androidx.appcompat
 
     //networking
-    implementation "com.squareup.retrofit2:retrofit:$retrofitVersion"
-    implementation "com.squareup.retrofit2:converter-gson:$retrofitVersion"
-    implementation "com.squareup.okhttp3:logging-interceptor:$okhttp3LogInterceptor"
+    implementation libs.retrofit
+    implementation libs.converter.gson
+    implementation libs.logging.interceptor
 
     //database
-    implementation "androidx.room:room-runtime:$roomVersion"
-    kapt "androidx.room:room-compiler:$roomVersion"
-    implementation "androidx.room:room-ktx:$roomVersion"
+    implementation libs.androidx.room.runtime
+    kapt libs.room.compiler
+    implementation libs.room.ktx
 
     //di
-    implementation "org.koin:koin-android:$koinVersion"
-    implementation "org.koin:koin-androidx-viewmodel:$koinVersion"
-    implementation "org.koin:koin-androidx-scope:$koinVersion"
+    implementation libs.koin.android
 
 }

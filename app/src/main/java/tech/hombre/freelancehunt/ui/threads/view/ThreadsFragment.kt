@@ -4,7 +4,6 @@ import androidx.annotation.Keep
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.github.vivchar.rendererrecyclerviewadapter.*
-import kotlinx.android.synthetic.main.fragment_threads.*
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import tech.hombre.domain.model.ThreadsList
@@ -15,13 +14,14 @@ import tech.hombre.freelancehunt.common.extensions.snackbar
 import tech.hombre.freelancehunt.common.extensions.subscribe
 import tech.hombre.freelancehunt.common.widgets.CustomImageView
 import tech.hombre.freelancehunt.common.widgets.EndlessScroll
+import tech.hombre.freelancehunt.databinding.FragmentThreadsBinding
 import tech.hombre.freelancehunt.ui.base.*
 import tech.hombre.freelancehunt.ui.base.ViewState
 import tech.hombre.freelancehunt.ui.main.presentation.MainPublicViewModel
 import tech.hombre.freelancehunt.ui.threads.presentation.ThreadsViewModel
 import java.util.*
 
-class ThreadsFragment : BaseFragment() {
+class ThreadsFragment : BaseFragment<FragmentThreadsBinding>(FragmentThreadsBinding::inflate) {
 
     private val viewModel: ThreadsViewModel by viewModel()
 
@@ -43,8 +43,6 @@ class ThreadsFragment : BaseFragment() {
         timer.schedule(timerTask, delay, delay)
     }
 
-    override fun getLayout() = R.layout.fragment_threads
-
     private fun subscribeToData() {
         viewModel.viewState.subscribe(this, ::handleViewState)
     }
@@ -60,12 +58,12 @@ class ThreadsFragment : BaseFragment() {
 
     private fun handleError(error: String) {
         hideLoading()
-        showError(error, threadsFragmentContainer)
+        showError(error, binding.threadsFragmentContainer)
     }
 
     private fun showNoInternetError() {
         hideLoading()
-        snackbar(getString(R.string.no_internet_error_message), threadsFragmentContainer)
+        snackbar(getString(R.string.no_internet_error_message), binding.threadsFragmentContainer)
     }
 
 
@@ -119,15 +117,15 @@ class ThreadsFragment : BaseFragment() {
                 }
             )
         )
-        list.layoutManager = LinearLayoutManager(activity)
-        list.adapter = adapter
+        binding.list.layoutManager = LinearLayoutManager(activity)
+        binding.list.adapter = adapter
         adapter.registerRenderer(
             LoadMoreViewBinder(
                 R.layout.item_load_more
             )
         )
 
-        list.addOnScrollListener(object : EndlessScroll() {
+        binding.list.addOnScrollListener(object : EndlessScroll() {
             override fun onLoadMore(page: Int, totalItemsCount: Int) {
                 if (viewModel.pagination.next.isNotEmpty()) {
                     adapter.showLoadMore()
@@ -136,7 +134,7 @@ class ThreadsFragment : BaseFragment() {
             }
         })
 
-        refresh.setOnRefreshListener {
+        binding.refresh.setOnRefreshListener {
             refreshList(true)
         }
     }
@@ -151,7 +149,7 @@ class ThreadsFragment : BaseFragment() {
 
     private fun initThreadsList(freelancersList: ThreadsList) {
         hideLoading()
-        refresh.isRefreshing = false
+        binding.refresh.isRefreshing = false
 
         items.addAll(freelancersList.data)
         adapter.setItems(items)

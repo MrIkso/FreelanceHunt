@@ -12,17 +12,18 @@ import com.github.vivchar.rendererrecyclerviewadapter.BaseViewRenderer
 import com.github.vivchar.rendererrecyclerviewadapter.RendererRecyclerViewAdapter
 import com.github.vivchar.rendererrecyclerviewadapter.ViewFinder
 import com.github.vivchar.rendererrecyclerviewadapter.ViewRenderer
-import kotlinx.android.synthetic.main.fragment_pager_freelancer_overview.*
+
 import tech.hombre.domain.model.FreelancerDetail
 import tech.hombre.freelancehunt.R
 import tech.hombre.freelancehunt.common.EXTRA_1
 import tech.hombre.freelancehunt.common.UserType
 import tech.hombre.freelancehunt.common.extensions.visible
+import tech.hombre.freelancehunt.databinding.FragmentPagerEmployerOverviewBinding
+import tech.hombre.freelancehunt.databinding.FragmentPagerFreelancerOverviewBinding
 import tech.hombre.freelancehunt.ui.base.BaseFragment
 
 
-class PagerFreelancerOverview : BaseFragment() {
-    override fun getLayout() = R.layout.fragment_pager_freelancer_overview
+class PagerFreelancerOverview : BaseFragment<FragmentPagerFreelancerOverviewBinding>(FragmentPagerFreelancerOverviewBinding::inflate) {
 
     var details: FreelancerDetail.Data? = null
 
@@ -39,23 +40,23 @@ class PagerFreelancerOverview : BaseFragment() {
 
     private fun initOverview(details: FreelancerDetail.Data) {
         if (!details.attributes.verification.phone) {
-            verificatedPhone.alpha = 0.5f
+            binding.verificatedPhone.alpha = 0.5f
         }
         if (!details.attributes.verification.birth_date) {
-            verificatedBirth.alpha = 0.5f
+            binding.verificatedBirth.alpha = 0.5f
         }
         if (!details.attributes.verification.website) {
-            verificatedSite.alpha = 0.5f
+            binding.verificatedSite.alpha = 0.5f
         }
         if (!details.attributes.verification.wmid) {
-            verificatedBankID.alpha = 0.5f
+            binding.verificatedBankID.alpha = 0.5f
         }
 
         if (details.attributes.cv_html != null) {
 
-            if (!summary.setHtmlText(details.attributes.cv_html!!)) {
-                val viewId = summary.id
-                overviewFragmentContainer.removeView(summary)
+            if (!binding.summary.setHtmlText(details.attributes.cv_html!!)) {
+                val viewId = binding.summary.id
+                binding.overviewFragmentContainer.removeView(binding.summary)
 
                 val params: RelativeLayout.LayoutParams = RelativeLayout.LayoutParams(
                     RelativeLayout.LayoutParams.MATCH_PARENT,
@@ -92,15 +93,15 @@ class PagerFreelancerOverview : BaseFragment() {
                     )
                 }
 
-                overviewFragmentContainer.addView(webView)
+                binding.overviewFragmentContainer.addView(webView)
             }
-        } else summary.text = getString(R.string.no_information)
+        } else binding.summary.text = getString(R.string.no_information)
 
         initSkills(details.attributes.skills)
 
         if (appPreferences.getCurrentUserType() == UserType.EMPLOYER.type) {
-            buttonJob.visible()
-            buttonJob.setOnClickListener {
+            binding.buttonJob.visible()
+            binding.buttonJob.setOnClickListener {
                 appNavigator.showNewProjectDialog(details.id, true, details.attributes.login)
             }
         }
@@ -120,8 +121,8 @@ class PagerFreelancerOverview : BaseFragment() {
                 }
             )
         )
-        skillList.layoutManager = LinearLayoutManager(activity)
-        skillList.adapter = adapter
+        binding.skillList.layoutManager = LinearLayoutManager(activity)
+        binding.skillList.adapter = adapter
         adapter.setItems(skills)
     }
 

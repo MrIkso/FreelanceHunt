@@ -7,7 +7,6 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.RelativeLayout
 import androidx.annotation.Keep
-import kotlinx.android.synthetic.main.fragment_pager_contest_overview.*
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import tech.hombre.domain.model.ContestDetail
@@ -18,13 +17,13 @@ import tech.hombre.freelancehunt.common.extensions.getTimeAgo
 import tech.hombre.freelancehunt.common.extensions.parseFullDate
 import tech.hombre.freelancehunt.common.extensions.snackbar
 import tech.hombre.freelancehunt.common.extensions.subscribe
+import tech.hombre.freelancehunt.databinding.FragmentPagerContestOverviewBinding
 import tech.hombre.freelancehunt.ui.base.*
 import tech.hombre.freelancehunt.ui.contest.presentation.ContestOverviewViewModel
 import tech.hombre.freelancehunt.ui.contest.presentation.ContestPublicViewModel
 
 
-class PagerContestOverview : BaseFragment() {
-    override fun getLayout() = R.layout.fragment_pager_contest_overview
+class PagerContestOverview : BaseFragment<FragmentPagerContestOverviewBinding>(FragmentPagerContestOverviewBinding::inflate) {
 
     var project: ContestDetail.Data.Attributes? = null
 
@@ -45,27 +44,28 @@ class PagerContestOverview : BaseFragment() {
     }
 
     private fun subscribeToData() {
-        viewModel.employerDetails.subscribe(this, {
+        viewModel.employerDetails.subscribe(this) {
             when (it) {
                 is Loading -> showLoading()
                 is Success -> {
                     hideLoading()
                     appNavigator.showEmployerDetails(it.data.data)
                 }
+
                 is Error -> handleError(it.error.localizedMessage)
                 is NoInternetState -> showNoInternetError()
             }
-        })
+        }
     }
 
     private fun handleError(error: String) {
         hideLoading()
-        showError(error, overviewActivityContainer)
+        showError(error, binding.overviewActivityContainer)
     }
 
     private fun showNoInternetError() {
         hideLoading()
-        snackbar(getString(R.string.no_internet_error_message), overviewActivityContainer)
+        snackbar(getString(R.string.no_internet_error_message), binding.overviewActivityContainer)
     }
 
 
@@ -83,9 +83,8 @@ class PagerContestOverview : BaseFragment() {
                 desc.append(update.description_html)
             }
 
-            if (!description.setHtmlText(desc.toString())) {
-                val viewId = description.id
-                overviewActivityContainer.removeView(description)
+            if (!binding.description.setHtmlText(desc.toString())) {
+                binding.root.removeView(binding.description)
 
                 val params: RelativeLayout.LayoutParams = RelativeLayout.LayoutParams(
                     RelativeLayout.LayoutParams.MATCH_PARENT,
@@ -94,7 +93,6 @@ class PagerContestOverview : BaseFragment() {
 
                 val webView = WebView(requireContext())
                 webView.apply {
-                    id = viewId
                     layoutParams = params
                     webViewClient = object : WebViewClient() {
                         override fun shouldOverrideUrlLoading(
@@ -114,16 +112,16 @@ class PagerContestOverview : BaseFragment() {
                     webChromeClient = WebChromeClient()
                     loadDataWithBaseURL(null, desc.toString(), "text/html", "ru_RU", null)
                 }
-                overviewActivityContainer.addView(webView, 2)
+                binding.root.addView(webView, 2)
             }
 
-        } else description.text = getString(R.string.no_information)
+        } else binding.description.text = getString(R.string.no_information)
 
-        avatar.setUrl(details.employer.avatar.large.url, isCircle = true)
-        name.text = "${details.employer.first_name} ${details.employer.last_name}"
-        login.text = details.employer.login
+        binding.avatar.setUrl(details.employer.avatar.large.url, isCircle = true)
+        binding.name.text = "${details.employer.first_name} ${details.employer.last_name}"
+        binding.login.text = details.employer.login
 
-        buttonProfile.setOnClickListener {
+        binding.buttonProfile.setOnClickListener {
             viewModel.getEmployerDetails(details.employer.id)
         }
 

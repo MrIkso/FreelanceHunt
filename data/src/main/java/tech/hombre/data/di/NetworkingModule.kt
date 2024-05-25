@@ -19,10 +19,11 @@ import java.util.concurrent.TimeUnit
 
 val networkingModule = module {
     single { GsonConverterFactory.create(GsonBuilder().setLenient().create()) as Converter.Factory }
-    if (BuildConfig.DEBUG) single { HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY) as Interceptor }
     single {
         OkHttpClient.Builder().apply {
-            if (BuildConfig.DEBUG) addInterceptor(get())
+            if (BuildConfig.DEBUG) {
+                HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY).let(::addInterceptor)
+            }
             addInterceptor {
                 val prefs = androidContext().getSharedPreferences(
                     "preferences",
@@ -36,7 +37,7 @@ val networkingModule = module {
                     )
                         .addHeader(
                             "Accept-Language",
-                            prefs.getString("KEY_APP_LANGUAGE", getCurrentDefaultLanguage())
+                            prefs.getString("KEY_APP_LANGUAGE", getCurrentDefaultLanguage())!!
                         )
                         .addHeader(
                             "User-Agent",

@@ -8,7 +8,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import kotlinx.android.synthetic.main.bottom_menu_employers_filter.*
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import tech.hombre.data.database.dao.CountriesDao
 import tech.hombre.domain.interaction.cities.GetCitiesUseCase
@@ -21,12 +20,11 @@ import tech.hombre.freelancehunt.common.EXTRA_1
 import tech.hombre.freelancehunt.common.EXTRA_2
 import tech.hombre.freelancehunt.common.extensions.launch
 import tech.hombre.freelancehunt.common.extensions.subscribe
+import tech.hombre.freelancehunt.databinding.BottomMenuEmployersFilterBinding
 import tech.hombre.freelancehunt.framework.app.AppHelper
 import tech.hombre.freelancehunt.ui.base.BaseBottomDialogFragment
 
-class EmployersFilterBottomDialogFragment : BaseBottomDialogFragment() {
-
-    override fun getLayout() = R.layout.bottom_menu_employers_filter
+class EmployersFilterBottomDialogFragment : BaseBottomDialogFragment<BottomMenuEmployersFilterBinding>(BottomMenuEmployersFilterBinding::inflate) {
 
     private val viewModel: FreelancersFilterViewModel by viewModel()
 
@@ -55,7 +53,7 @@ class EmployersFilterBottomDialogFragment : BaseBottomDialogFragment() {
 
     private fun initViews() {
 
-        countriesList.setOnClickListener {
+        binding.countriesList.setOnClickListener {
             with(
                 AlertDialog.Builder(
                     requireContext(),
@@ -81,7 +79,7 @@ class EmployersFilterBottomDialogFragment : BaseBottomDialogFragment() {
             }
         }
 
-        citiesList.setOnClickListener {
+        binding.citiesList.setOnClickListener {
             with(
                 AlertDialog.Builder(
                     requireContext(),
@@ -105,7 +103,7 @@ class EmployersFilterBottomDialogFragment : BaseBottomDialogFragment() {
             }
         }
 
-        buttonSubmit.setOnClickListener {
+        binding.buttonSubmit.setOnClickListener {
             listener?.onSubmitEmployersFilter(
                 if (checkedCountry > 0) checkedCountry else 0,
                 if (checkedCity > 0) checkedCity else 0
@@ -113,7 +111,7 @@ class EmployersFilterBottomDialogFragment : BaseBottomDialogFragment() {
             dismiss()
         }
 
-        citiesList.isEnabled = checkedCountry != -1
+        binding.citiesList.isEnabled = checkedCountry != -1
 
     }
 
@@ -133,19 +131,19 @@ class EmployersFilterBottomDialogFragment : BaseBottomDialogFragment() {
     private fun updateSpinnerView(isCountries: Boolean, isCities: Boolean) {
         if (isCountries) {
             if (checkedCountry > 0) {
-                countriesList.text = countries.find { it.id == checkedCountry }?.name ?: getString(R.string.select)
+                binding.countriesList.text = countries.find { it.id == checkedCountry }?.name ?: getString(R.string.select)
                 viewModel.setCities(checkedCountry)
-                citiesList.text = getString(R.string.select)
-                citiesList.isEnabled = true
+                binding.citiesList.text = getString(R.string.select)
+                binding.citiesList.isEnabled = true
             } else {
-                countriesList.text = getString(R.string.select)
-                citiesList.text = getString(R.string.select)
-                citiesList.isEnabled = false
+                binding.countriesList.text = getString(R.string.select)
+                binding.citiesList.text = getString(R.string.select)
+                binding.citiesList.isEnabled = false
             }
         } else if (isCities) {
-            if (checkedCity > 0) citiesList.text = cities.find { it.id == checkedCity }?.name ?: getString(R.string.select) else {
-                citiesList.text = getString(R.string.select)
-                citiesList.isEnabled = true
+            if (checkedCity > 0) binding.citiesList.text = cities.find { it.id == checkedCity }?.name ?: getString(R.string.select) else {
+                binding.citiesList.text = getString(R.string.select)
+                binding.citiesList.isEnabled = true
             }
         }
     }

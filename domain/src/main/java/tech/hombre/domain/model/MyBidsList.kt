@@ -3,7 +3,7 @@ package tech.hombre.domain.model
 import android.os.Parcelable
 import com.github.vivchar.rendererrecyclerviewadapter.ViewModel
 import com.google.gson.annotations.SerializedName
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 
 data class MyBidsList(
     val `data`: List<Data> = listOf(),

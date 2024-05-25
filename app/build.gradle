@@ -1,22 +1,14 @@
-apply plugin: 'com.android.application'
-
-apply plugin: 'kotlin-android'
-
-apply plugin: 'kotlin-android-extensions'
-
-apply plugin: 'kotlin-kapt'
-
-buildProperties {
-    notThere {
-        using rootProject.file('debug_gradle.properties')
-    }
-    secrets {
-        using rootProject.file('release_gradle.properties')
-    }
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+    id 'org.jetbrains.kotlin.plugin.parcelize'
+    id 'org.jetbrains.kotlin.kapt'
 }
 
 android {
     compileSdkVersion Integer.parseInt(ANDROID_COMPILE_SDK_VERSION)
+    namespace = "tech.hombre.freelancehunt"
+
     defaultConfig {
         applicationId "tech.hombre.freelancehunt"
         minSdkVersion Integer.parseInt(ANDROID_MIN_SDK_VERSION)
@@ -29,19 +21,19 @@ android {
 
         archivesBaseName = "freelancehunt-${versionName}(${versionCode})"
     }
-    signingConfigs {
+    /*signingConfigs {
         signing {
             keyAlias((buildProperties.secrets['android_key_alias'] | buildProperties.notThere['android_key_alias']).string)
             keyPassword((buildProperties.secrets['android_store_password'] | buildProperties.notThere['android_store_password']).string)
             storeFile file('keystore-public')
             storePassword((buildProperties.secrets['android_store_password'] | buildProperties.notThere['android_store_password']).string)
         }
-    }
+    }*/
     buildTypes {
         release {
             minifyEnabled true
             shrinkResources true
-            signingConfig signingConfigs.signing
+           // signingConfig signingConfigs.signing
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         debug {
@@ -50,9 +42,7 @@ android {
             ext.alwaysUpdateBuildId = false
         }
     }
-    androidExtensions {
-        experimental = true
-    }
+
     compileOptions {
         sourceCompatibility = 1.8
         targetCompatibility = 1.8
@@ -64,57 +54,51 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
+    buildFeatures {
+        buildConfig true
+        viewBinding true
+    }
 }
 
 
 dependencies {
     implementation project(":domain")
     implementation project(":data")
+    implementation project(":rendererrecyclerviewadapter")
+    implementation project(":HtmlTextView")
 
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"
-    implementation 'androidx.appcompat:appcompat:1.4.1'
-    implementation 'androidx.core:core-ktx:1.7.0'
-    implementation 'androidx.annotation:annotation:1.3.0'
+    implementation libs.androidx.appcompat
+    implementation libs.androidx.core.ktx
+    implementation libs.androidx.annotation
 
     //design libs
-    implementation 'com.google.android.material:material:1.6.0-alpha02'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.3'
+    implementation libs.material
+    implementation libs.androidx.constraintlayout
 
     //di
-    implementation "org.koin:koin-android:$koinVersion"
-    implementation "org.koin:koin-androidx-viewmodel:$koinVersion"
-    implementation "org.koin:koin-androidx-scope:$koinVersion"
+    implementation libs.koin.android
 
     //arhitecture components
-    implementation "android.arch.lifecycle:viewmodel:$architectureComponents"
-    implementation "androidx.lifecycle:lifecycle-common-java8:$architectureComponents"
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$architectureComponents"
-    implementation "androidx.lifecycle:lifecycle-runtime-ktx:$architectureComponents"
-    implementation "androidx.lifecycle:lifecycle-livedata-ktx:$architectureComponents"
+    implementation libs.androidx.lifecycle.common.java8
+    implementation libs.androidx.lifecycle.viewmodel.ktx
+    implementation libs.androidx.lifecycle.runtime.ktx
+    implementation libs.lifecycle.livedata.ktx
 
     //coroutines
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion"
+    implementation libs.kotlinx.coroutines.android
+    /*def nav_version = "2.7.7"
+    implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"
+    implementation "androidx.navigation:navigation-ui-ktx:$nav_version"*/
+    implementation libs.androidx.swiperefreshlayout
 
-    implementation "android.arch.navigation:navigation-ui:1.0.0"
+    implementation libs.glide
+    kapt libs.glide.compiler
 
-    implementation 'com.github.vivchar:RendererRecyclerViewAdapter:3.0.3-SNAPSHOT'
-    implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
-
-    implementation 'com.github.bumptech.glide:glide:4.11.0'
-    kapt 'com.github.bumptech.glide:compiler:4.11.0'
-
-    implementation 'com.caverock:androidsvg-aar:1.4'
-
-    implementation 'org.sufficientlysecure:html-textview:4.0'
-
-    implementation "androidx.work:work-runtime-ktx:$workVersion"
-
-    implementation "androidx.preference:preference:$preferencesVersion"
-
-    implementation "com.android.billingclient:billing-ktx:$billingVersion"
-
-    implementation "com.squareup.retrofit2:retrofit:$retrofitVersion"
+    implementation libs.androidsvg.aar
+    implementation libs.androidx.work.runtime.ktx
+    implementation libs.androidx.preference.ktx
+    implementation libs.billing.ktx
+    implementation libs.retrofit
 
 }

@@ -52,12 +52,12 @@ class SettingFragment : PreferenceFragmentCompat(), KoinComponent,
 
     override fun onResume() {
         super.onResume()
-        preferenceScreen.sharedPreferences.registerOnSharedPreferenceChangeListener(this)
+        preferenceScreen.sharedPreferences?.registerOnSharedPreferenceChangeListener(this)
     }
 
     override fun onPause() {
         super.onPause()
-        preferenceScreen.sharedPreferences.unregisterOnSharedPreferenceChangeListener(this)
+        preferenceScreen.sharedPreferences?.unregisterOnSharedPreferenceChangeListener(this)
     }
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
@@ -141,14 +141,14 @@ class SettingFragment : PreferenceFragmentCompat(), KoinComponent,
     }
 
     private fun resetWorkerInterval(reset: Boolean) {
-        if (reset) preferenceScreen.sharedPreferences.unregisterOnSharedPreferenceChangeListener(
+        if (reset) preferenceScreen.sharedPreferences?.unregisterOnSharedPreferenceChangeListener(
             this
         )
         appPreferences.resetWorkerInterval()
         val intervalList =
             preferenceManager.findPreference<Preference>(KEY_WORKER_INTERVAL) as ListPreference?
         intervalList?.value = appPreferences.getWorkerInterval().toString()
-        if (reset) preferenceScreen.sharedPreferences.registerOnSharedPreferenceChangeListener(this)
+        if (reset) preferenceScreen.sharedPreferences?.registerOnSharedPreferenceChangeListener(this)
     }
 
     companion object {

@@ -6,16 +6,33 @@ import android.view.MenuItem
 import android.view.View
 import androidx.core.content.ContextCompat
 import com.google.android.material.tabs.TabLayout
-import kotlinx.android.synthetic.main.activity_freelancer_detail.*
-import kotlinx.android.synthetic.main.placeholder_freelancer.*
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import tech.hombre.domain.model.FreelancerDetail
 import tech.hombre.freelancehunt.R
 import tech.hombre.freelancehunt.common.EXTRA_1
 import tech.hombre.freelancehunt.common.EXTRA_2
 import tech.hombre.freelancehunt.common.FreelancerStatus
-import tech.hombre.freelancehunt.common.extensions.*
-import tech.hombre.freelancehunt.ui.base.*
+import tech.hombre.freelancehunt.common.extensions.calculateAge
+import tech.hombre.freelancehunt.common.extensions.getColorByFreelancerStatus
+import tech.hombre.freelancehunt.common.extensions.getEnding
+import tech.hombre.freelancehunt.common.extensions.getFreelancerStatus
+import tech.hombre.freelancehunt.common.extensions.getTimeAgo
+import tech.hombre.freelancehunt.common.extensions.gone
+import tech.hombre.freelancehunt.common.extensions.parseFullDate
+import tech.hombre.freelancehunt.common.extensions.parseSimpleDate
+import tech.hombre.freelancehunt.common.extensions.snackbar
+import tech.hombre.freelancehunt.common.extensions.subscribe
+import tech.hombre.freelancehunt.common.extensions.switch
+import tech.hombre.freelancehunt.common.extensions.toVisibleState
+import tech.hombre.freelancehunt.common.extensions.toast
+import tech.hombre.freelancehunt.common.extensions.visible
+import tech.hombre.freelancehunt.databinding.ActivityFreelancerDetailBinding
+import tech.hombre.freelancehunt.ui.base.BaseActivity
+import tech.hombre.freelancehunt.ui.base.Error
+import tech.hombre.freelancehunt.ui.base.Loading
+import tech.hombre.freelancehunt.ui.base.NoInternetState
+import tech.hombre.freelancehunt.ui.base.Success
+import tech.hombre.freelancehunt.ui.base.ViewState
 import tech.hombre.freelancehunt.ui.freelancers.presentation.FreelancerDetailViewModel
 import tech.hombre.freelancehunt.ui.freelancers.presentation.FreelancerPublicViewModel
 import tech.hombre.freelancehunt.ui.freelancers.view.pager.PagerFreelancerBids
@@ -25,7 +42,7 @@ import tech.hombre.freelancehunt.ui.menu.BottomMenuBuilder
 import tech.hombre.freelancehunt.ui.menu.CreateThreadBottomDialogFragment
 
 
-class FreelancerDetailActivity : BaseActivity(),
+class FreelancerDetailActivity : BaseActivity<ActivityFreelancerDetailBinding>(ActivityFreelancerDetailBinding::inflate),
     CreateThreadBottomDialogFragment.OnCreateThreadListener {
 
     private val viewModel: FreelancerDetailViewModel by viewModel()
@@ -39,8 +56,7 @@ class FreelancerDetailActivity : BaseActivity(),
     var freelancerUrl = ""
 
     override fun viewReady() {
-        setContentView(R.layout.activity_freelancer_detail)
-        setSupportActionBar(toolbar)
+        setSupportActionBar(binding.toolbar)
         setTitle(R.string.freelancer_view)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         intent?.extras?.let {
@@ -77,10 +93,10 @@ class FreelancerDetailActivity : BaseActivity(),
         viewModel.viewState.subscribe(this, ::handleViewState)
         viewModel.action.subscribe(this, ::handleActionViewState)
         viewModel.countries.subscribe(this, {
-            hideLoading(progressBar)
+            hideLoading(binding.progressBar)
             if (countryId != -1) {
                 val country = it.find { it.id == countryId }
-                if (country != null) locationIcon.setUrlSVG("https://freelancehunt.com/static/images/flags/4x3/${country.iso2.toLowerCase()}.svg")
+                if (country != null) binding.locationIcon.setUrlSVG("https://freelancehunt.com/static/images/flags/4x3/${country.iso2.toLowerCase()}.svg")
             }
         })
         viewModel.setCountries()
@@ -88,7 +104,7 @@ class FreelancerDetailActivity : BaseActivity(),
 
     private fun handleViewState(viewState: ViewState<FreelancerDetail>) {
         when (viewState) {
-            is Loading -> showLoading(progressBar)
+            is Loading -> showLoading(binding.progressBar)
             is Success -> {
                 initFreelancerDetails(viewState.data.data)
                 viewModel.setCountries()
@@ -99,43 +115,45 @@ class FreelancerDetailActivity : BaseActivity(),
     }
 
     private fun handleActionViewState(viewState: ViewState<String>) {
-        hideLoading(progressBar)
+        hideLoading(binding.progressBar)
         when (viewState) {
             is Success -> {
                 when (viewState.data) {
                     "message" -> toast(getString(R.string.message_sent))
                 }
             }
+
+            else -> {}
         }
     }
 
     private fun initFreelancerDetails(details: FreelancerDetail.Data) {
-        hideLoading(progressBar)
+        hideLoading(binding.progressBar)
 
-        preview.visibility = View.INVISIBLE
-        content.visible()
+        binding.placeholderFreelancer.preview.visibility = View.INVISIBLE
+        binding.content.visible()
 
         profileId = details.id
 
         freelancerUrl = details.links.self.web
 
-        toolbar.subtitle = details.attributes.login
+        binding.toolbar.subtitle = details.attributes.login
 
 
-        avatar.setUrl(details.attributes.avatar.large.url, isCircle = true)
-        name.text = "${details.attributes.first_name} ${details.attributes.last_name}"
-        login.text = details.attributes.login
-        rating.text = details.attributes.rating.toString()
-        verified.visibility = details.attributes.verification.identity.toVisibleState()
-        isplus.visibility = details.attributes.is_plus_active.toVisibleState()
-        status.text = details.attributes.status.name
-        status.background.setColorFilter(
+        binding.avatar.setUrl(details.attributes.avatar.large.url, isCircle = true)
+        binding.name.text = "${details.attributes.first_name} ${details.attributes.last_name}"
+        binding.login.text = details.attributes.login
+        binding.rating.text = details.attributes.rating.toString()
+        binding.verified.visibility = details.attributes.verification.identity.toVisibleState()
+        binding.isplus.visibility = details.attributes.is_plus_active.toVisibleState()
+        binding.status.text = details.attributes.status.name
+        binding.status.background.setColorFilter(
             ContextCompat.getColor(
                 this,
                 getColorByFreelancerStatus(getFreelancerStatus(details.attributes.status.id))
             ), PorterDuff.Mode.SRC_OVER
         )
-        location.text = details.attributes.location?.let {
+        binding.location.text = details.attributes.location?.let {
             if (details.attributes.location!!.country != null && details.attributes.location!!.city != null)
                 "${details.attributes.location!!.country!!.name}, ${details.attributes.location!!.city!!.name}"
             else if (details.attributes.location!!.country != null)
@@ -144,27 +162,27 @@ class FreelancerDetailActivity : BaseActivity(),
         if (details.attributes.location != null && details.attributes.location!!.country != null) {
             countryId = details.attributes.location!!.country!!.id
         }
-        voteup.text = details.attributes.positive_reviews.toString()
-        votedown.text = details.attributes.negative_reviews.toString()
-        arbitrages.text = details.attributes.arbitrages.toString()
+        binding.voteup.text = details.attributes.positive_reviews.toString()
+        binding.votedown.text = details.attributes.negative_reviews.toString()
+        binding.arbitrages.text = details.attributes.arbitrages.toString()
         if (details.attributes.birth_date != null) {
-            birthdate.text = details.attributes.birth_date!!.parseSimpleDate()
+            binding.birthdate.text = details.attributes.birth_date!!.parseSimpleDate()
                 ?.let { calculateAge(it).getEnding(this, R.array.ending_years) }
-        } else birthdate.gone()
+        } else binding.birthdate.gone()
 
-        visitedAt.text = details.attributes.visited_at?.parseFullDate(true).getTimeAgo()
+        binding.visitedAt.text = details.attributes.visited_at?.parseFullDate(true).getTimeAgo()
 
         if (profileId != appPreferences.getCurrentUserId()) {
-            buttonMessage.visible()
+            binding.buttonMessage.visible()
             if (getFreelancerStatus(details.attributes.status.id) != FreelancerStatus.TEMP_NOT_WORK) {
-                buttonMessage.setOnClickListener {
+                binding.buttonMessage.setOnClickListener {
                     BottomMenuBuilder(
                         this,
                         supportFragmentManager,
                         CreateThreadBottomDialogFragment.TAG
                     ).buildMenuForCreateThread(profileId)
                 }
-            } else buttonMessage.isEnabled = false
+            } else binding.buttonMessage.isEnabled = false
         }
 
         supportFragmentManager.switch(
@@ -174,16 +192,16 @@ class FreelancerDetailActivity : BaseActivity(),
             false
         )
 
-        tabs.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+        binding.tabs.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabReselected(tab: TabLayout.Tab?) {
-                containerScroller.scrollTo(0, 0)
+                binding.containerScroller.scrollTo(0, 0)
             }
 
             override fun onTabUnselected(tab: TabLayout.Tab?) {
             }
 
             override fun onTabSelected(tab: TabLayout.Tab?) {
-                containerScroller.scrollTo(0, 0)
+                binding.containerScroller.scrollTo(0, 0)
                 tab?.position?.let {
                     when (it) {
                         0 -> supportFragmentManager.switch(
@@ -215,13 +233,13 @@ class FreelancerDetailActivity : BaseActivity(),
 
 
     private fun handleError(error: String) {
-        hideLoading(progressBar)
+        hideLoading(binding.progressBar)
         showError(error)
     }
 
     private fun showNoInternetError() {
-        hideLoading(progressBar)
-        snackbar(getString(R.string.no_internet_error_message), freelancerActivityContainer)
+        hideLoading(binding.progressBar)
+        snackbar(getString(R.string.no_internet_error_message), binding.freelancerActivityContainer)
     }
 
     override fun onThreadCreated(subject: String, message: String, toProfileId: Int) {

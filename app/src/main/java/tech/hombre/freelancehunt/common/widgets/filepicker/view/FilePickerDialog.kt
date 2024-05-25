@@ -12,8 +12,6 @@ import android.view.Window
 import android.widget.AdapterView
 import android.widget.ListView
 import android.widget.Toast
-import kotlinx.android.synthetic.main.dialog_footer.*
-import kotlinx.android.synthetic.main.dialog_header.*
 import tech.hombre.freelancehunt.R
 import tech.hombre.freelancehunt.common.widgets.filepicker.controller.DialogSelectionListener
 import tech.hombre.freelancehunt.common.widgets.filepicker.controller.NotifyItemChecked
@@ -25,6 +23,7 @@ import tech.hombre.freelancehunt.common.widgets.filepicker.model.MarkedItemList
 import tech.hombre.freelancehunt.common.widgets.filepicker.utils.ExtensionFilter
 import tech.hombre.freelancehunt.common.widgets.filepicker.utils.Utility
 import tech.hombre.freelancehunt.common.widgets.filepicker.widget.MaterialCheckbox
+import tech.hombre.freelancehunt.databinding.DialogMainBinding
 import tech.hombre.freelancehunt.framework.app.ViewHelper
 import java.io.File
 import java.util.*
@@ -41,6 +40,7 @@ class FilePickerDialog : Dialog, AdapterView.OnItemClickListener {
 	private var positiveBtnNameStr: String? = null
 	private var negativeBtnNameStr: String? = null
 	private lateinit var listView: ListView
+	private var binding: DialogMainBinding? = null;
 
 	constructor(context: Context) : super(context) {
 		this.ctx = context
@@ -66,43 +66,44 @@ class FilePickerDialog : Dialog, AdapterView.OnItemClickListener {
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		requestWindowFeature(Window.FEATURE_NO_TITLE)
-		setContentView(R.layout.dialog_main)
+		binding = DialogMainBinding.inflate(layoutInflater)
+		setContentView(binding!!.root)
 		listView = findViewById(R.id.fileList)
 		val size = MarkedItemList.fileCount
 		if (size == 0) {
-			select.isEnabled = false
+			binding!!.footer.select.isEnabled = false
 			val color: Int = ViewHelper.getAccentColor(ctx)
-			select.setTextColor(Color.argb(128, Color.red(color), Color.green(color),
+			binding!!.footer.select.setTextColor(Color.argb(128, Color.red(color), Color.green(color),
 					Color.blue(color)))
 		}
 		if (negativeBtnNameStr != null) {
-			cancel.text = negativeBtnNameStr
+			binding!!.footer.cancel.text = negativeBtnNameStr
 		}
-		select.setOnClickListener {
+		binding!!.footer.select.setOnClickListener {
 			val paths = MarkedItemList.selectedPaths
 			if (callbacks != null) {
 				callbacks!!.onSelectedFilePaths(paths)
 			}
 			dismiss()
 		}
-		cancel.setOnClickListener { cancel() }
+		binding!!.footer.cancel.setOnClickListener { cancel() }
 		mFileListAdapter = FileListAdapter(internalList, ctx, properties)
 		mFileListAdapter?.setNotifyItemCheckedListener(object : NotifyItemChecked {
 			override fun notifyCheckBoxIsClicked() {
 				positiveBtnNameStr = if (positiveBtnNameStr == null) ctx.resources.getString(R.string.choose_button_label) else positiveBtnNameStr
 				val size = MarkedItemList.fileCount
 				if (size == 0) {
-					select.isEnabled = false
+					binding!!.footer.select.isEnabled = false
 					val color: Int = ViewHelper.getAccentColor(ctx)
-					select.setTextColor(Color.argb(128, Color.red(color), Color.green(color),
+					binding!!.footer.select.setTextColor(Color.argb(128, Color.red(color), Color.green(color),
 							Color.blue(color)))
-					select.text = positiveBtnNameStr
+					binding!!.footer.select.text = positiveBtnNameStr
 				} else {
-					select.isEnabled = true
+					binding!!.footer.select.isEnabled = true
 					val color: Int = ViewHelper.getAccentColor(ctx)
-					select.setTextColor(color)
+					binding!!.footer.select.setTextColor(color)
 					val button_label = "$positiveBtnNameStr ($size) "
-					select.text = button_label
+					binding!!.footer.select.text = button_label
 				}
 				if (properties.selection_mode == DialogConfigs.SINGLE_MODE) {
 					mFileListAdapter!!.notifyDataSetChanged()
@@ -115,23 +116,23 @@ class FilePickerDialog : Dialog, AdapterView.OnItemClickListener {
 	}
 
 	private fun setTitle() {
-		if (title == null || dname == null) {
+		if (binding!!.header.title == null || binding!!.header.dname == null) {
 			return
 		}
 		if (titleStr != null) {
-			if (title!!.visibility == View.INVISIBLE) {
-				title!!.visibility = View.VISIBLE
+			if (binding!!.header.title.visibility == View.INVISIBLE) {
+				binding!!.header.title.visibility = View.VISIBLE
 			}
-			title!!.text = titleStr
-			if (dname!!.visibility == View.VISIBLE) {
-				dname!!.visibility = View.INVISIBLE
+			binding!!.header.title.text = titleStr
+			if (binding!!.header.dname.visibility == View.VISIBLE) {
+				binding!!.header.dname.visibility = View.INVISIBLE
 			}
 		} else {
-			if (title!!.visibility == View.VISIBLE) {
-				title!!.visibility = View.INVISIBLE
+			if (binding!!.header.title.visibility == View.VISIBLE) {
+				binding!!.header.title.visibility = View.INVISIBLE
 			}
-			if (dname!!.visibility == View.INVISIBLE) {
-				dname!!.visibility = View.VISIBLE
+			if (binding!!.header.dname.visibility == View.INVISIBLE) {
+				binding!!.header.dname.visibility = View.VISIBLE
 			}
 		}
 	}
@@ -139,7 +140,7 @@ class FilePickerDialog : Dialog, AdapterView.OnItemClickListener {
 	override fun onStart() {
 		super.onStart()
 		positiveBtnNameStr = if (positiveBtnNameStr == null) ctx.resources.getString(R.string.choose_button_label) else positiveBtnNameStr
-		select!!.text = positiveBtnNameStr
+		binding!!.footer.select.text = positiveBtnNameStr
 		if (Utility.checkStorageAccessPermissions(context)) {
 			val currLoc: File
 			internalList.clear()
@@ -157,8 +158,8 @@ class FilePickerDialog : Dialog, AdapterView.OnItemClickListener {
 			} else {
 				currLoc = File(properties.error_dir.absolutePath)
 			}
-			dname!!.text = currLoc.name
-			dir_path!!.text = currLoc.absolutePath
+			binding!!.header.dname!!.text = currLoc.name
+			binding!!.header.dirPath!!.text = currLoc.absolutePath
 			setTitle()
 			internalList = Utility.prepareFileListEntries(internalList, currLoc, filter,
 					properties.show_hidden_files)
@@ -179,9 +180,9 @@ class FilePickerDialog : Dialog, AdapterView.OnItemClickListener {
 			if (fitem.isDirectory) {
 				if (File(fitem.location).canRead()) {
 					val currLoc = File(fitem.location)
-					dname!!.text = currLoc.name
+					binding!!.header.dname!!.text = currLoc.name
 					setTitle()
-					dir_path!!.text = currLoc.absolutePath
+					binding!!.header.dirPath!!.text = currLoc.absolutePath
 					internalList.clear()
 					if (currLoc.name != properties.root.name) {
 						val parent = FileListItem()
@@ -328,19 +329,19 @@ class FilePickerDialog : Dialog, AdapterView.OnItemClickListener {
 		} else {
 			super.show()
 			positiveBtnNameStr = if (positiveBtnNameStr == null) ctx.resources.getString(R.string.choose_button_label) else positiveBtnNameStr
-			select!!.text = positiveBtnNameStr
+			binding!!.footer.select!!.text = positiveBtnNameStr
 			val size = MarkedItemList.fileCount
 			if (size == 0) {
-				select!!.text = positiveBtnNameStr
+				binding!!.footer.select!!.text = positiveBtnNameStr
 			} else {
 				val buttonLabel = "$positiveBtnNameStr ($size) "
-				select!!.text = buttonLabel
+				binding!!.footer.select!!.text = buttonLabel
 			}
 		}
 	}
 
 	override fun onBackPressed() {
-		val currentDirName = dname!!.text.toString()
+		val currentDirName = binding!!.header.dname!!.text.toString()
 		if (internalList.size > 0) {
 			val fitem = internalList[0]
 			val currLoc = File(fitem.location)
@@ -348,8 +349,8 @@ class FilePickerDialog : Dialog, AdapterView.OnItemClickListener {
 					!currLoc.canRead()) {
 				super.onBackPressed()
 			} else {
-				dname!!.text = currLoc.name
-				dir_path!!.text = currLoc.absolutePath
+				binding!!.header.dname!!.text = currLoc.name
+				binding!!.header.dirPath!!.text = currLoc.absolutePath
 				internalList.clear()
 				if (currLoc.name != properties.root.name) {
 					val parent = FileListItem()

@@ -3,7 +3,7 @@ package tech.hombre.freelancehunt.ui.my.contests.view
 import androidx.annotation.Keep
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.github.vivchar.rendererrecyclerviewadapter.*
-import kotlinx.android.synthetic.main.fragment_contests.*
+
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import tech.hombre.domain.model.ContestDetail
 import tech.hombre.domain.model.MyContestsList
@@ -11,15 +11,14 @@ import tech.hombre.freelancehunt.R
 import tech.hombre.freelancehunt.common.extensions.*
 import tech.hombre.freelancehunt.common.widgets.CustomImageView
 import tech.hombre.freelancehunt.common.widgets.EndlessScroll
+import tech.hombre.freelancehunt.databinding.FragmentContestsBinding
 import tech.hombre.freelancehunt.ui.base.*
 import tech.hombre.freelancehunt.ui.base.ViewState
 import tech.hombre.freelancehunt.ui.my.contests.presentation.MyContestsViewModel
 
-class MyContestsFragment : BaseFragment() {
+class MyContestsFragment : BaseFragment<FragmentContestsBinding>(FragmentContestsBinding::inflate) {
 
     private val viewModel: MyContestsViewModel by viewModel()
-
-    override fun getLayout() = R.layout.fragment_contests
 
     lateinit var adapter: RendererRecyclerViewAdapter
 
@@ -57,12 +56,12 @@ class MyContestsFragment : BaseFragment() {
 
     private fun handleError(error: String) {
         hideLoading()
-        showError(error, contestsFragmentContainer)
+        showError(error, binding.contestsFragmentContainer)
     }
 
     private fun showNoInternetError() {
         hideLoading()
-        snackbar(getString(R.string.no_internet_error_message), contestsFragmentContainer)
+        snackbar(getString(R.string.no_internet_error_message),  binding.contestsFragmentContainer)
     }
 
     private fun initList() {
@@ -107,15 +106,15 @@ class MyContestsFragment : BaseFragment() {
                 }
             )
         )
-        list.layoutManager = LinearLayoutManager(context)
-        list.adapter = adapter
+        binding.list.layoutManager = LinearLayoutManager(context)
+        binding.list.adapter = adapter
         adapter.registerRenderer(
             LoadMoreViewBinder(
                 R.layout.item_load_more
             )
         )
 
-        list.addOnScrollListener(object : EndlessScroll() {
+        binding.list.addOnScrollListener(object : EndlessScroll() {
             override fun onLoadMore(page: Int, totalItemsCount: Int) {
                 if (viewModel.pagination.next.isNotEmpty()) {
                     adapter.showLoadMore()
@@ -124,7 +123,7 @@ class MyContestsFragment : BaseFragment() {
             }
         })
 
-        refresh.setOnRefreshListener {
+        binding.refresh.setOnRefreshListener {
             items.clear()
             adapter.setItems(items)
             viewModel.getMyContestsLists()
@@ -134,7 +133,7 @@ class MyContestsFragment : BaseFragment() {
 
     private fun initMyContestsList(contestsList: MyContestsList) {
         hideLoading()
-        refresh.isRefreshing = false
+        binding.refresh.isRefreshing = false
 
         items.addAll(contestsList.data)
         adapter.setItems(items)

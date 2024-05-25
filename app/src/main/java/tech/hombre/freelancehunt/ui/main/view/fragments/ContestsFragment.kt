@@ -6,7 +6,6 @@ import android.view.MenuItem
 import androidx.annotation.Keep
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.github.vivchar.rendererrecyclerviewadapter.*
-import kotlinx.android.synthetic.main.fragment_contests.*
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import tech.hombre.domain.model.ContestDetail
@@ -15,6 +14,7 @@ import tech.hombre.freelancehunt.R
 import tech.hombre.freelancehunt.common.extensions.*
 import tech.hombre.freelancehunt.common.widgets.CustomImageView
 import tech.hombre.freelancehunt.common.widgets.EndlessScroll
+import tech.hombre.freelancehunt.databinding.FragmentContestsBinding
 import tech.hombre.freelancehunt.ui.base.*
 import tech.hombre.freelancehunt.ui.base.ViewState
 import tech.hombre.freelancehunt.ui.main.presentation.ContestsViewModel
@@ -22,13 +22,11 @@ import tech.hombre.freelancehunt.ui.main.presentation.MainPublicViewModel
 import tech.hombre.freelancehunt.ui.menu.BottomMenuBuilder
 import tech.hombre.freelancehunt.ui.menu.ContestsFilterBottomDialogFragment
 
-class ContestsFragment : BaseFragment(), ContestsFilterBottomDialogFragment.OnSubmitContestsFilter {
+class ContestsFragment : BaseFragment<FragmentContestsBinding>(FragmentContestsBinding::inflate), ContestsFilterBottomDialogFragment.OnSubmitContestsFilter {
 
     private val viewModel: ContestsViewModel by viewModel()
 
     private val publicViewModel: MainPublicViewModel by sharedViewModel()
-
-    override fun getLayout() = R.layout.fragment_contests
 
     lateinit var adapter: RendererRecyclerViewAdapter
 
@@ -42,22 +40,23 @@ class ContestsFragment : BaseFragment(), ContestsFilterBottomDialogFragment.OnSu
 
     private fun subscribeToData() {
         viewModel.viewState.subscribe(this, ::handleViewState)
-        publicViewModel.fabClickAction.subscribe(this, { action ->
+        publicViewModel.fabClickAction.subscribe(this) { action ->
             when (action) {
                 "contest_filter" -> showFilterDialog()
             }
-        })
-        viewModel.details.subscribe(this, {
+        }
+        viewModel.details.subscribe(this) {
             when (it) {
                 is Loading -> showLoading()
                 is Success -> {
                     hideLoading()
                     appNavigator.showContestDetails(it.data.data)
                 }
+
                 is Error -> handleError(it.error.localizedMessage)
                 is NoInternetState -> showNoInternetError()
             }
-        })
+        }
     }
 
     private fun showFilterDialog() {
@@ -80,14 +79,14 @@ class ContestsFragment : BaseFragment(), ContestsFilterBottomDialogFragment.OnSu
     }
 
     private fun handleError(error: String) {
-        refresh.isRefreshing = false
+        binding.refresh.isRefreshing = false
         hideLoading()
-        showError(error, contestsFragmentContainer)
+        showError(error, binding.contestsFragmentContainer)
     }
 
     private fun showNoInternetError() {
         hideLoading()
-        snackbar(getString(R.string.no_internet_error_message), contestsFragmentContainer)
+        snackbar(getString(R.string.no_internet_error_message), binding.contestsFragmentContainer)
     }
 
     private fun initList() {
@@ -132,15 +131,15 @@ class ContestsFragment : BaseFragment(), ContestsFilterBottomDialogFragment.OnSu
                 }
             )
         )
-        list.layoutManager = LinearLayoutManager(context)
-        list.adapter = adapter
+        binding.list.layoutManager = LinearLayoutManager(context)
+        binding.list.adapter = adapter
         adapter.registerRenderer(
             LoadMoreViewBinder(
                 R.layout.item_load_more
             )
         )
 
-        list.addOnScrollListener(object : EndlessScroll() {
+        binding.list.addOnScrollListener(object : EndlessScroll() {
             override fun onLoadMore(page: Int, totalItemsCount: Int) {
                 if (viewModel.pagination.next.isNotEmpty()) {
                     adapter.showLoadMore()
@@ -149,7 +148,7 @@ class ContestsFragment : BaseFragment(), ContestsFilterBottomDialogFragment.OnSu
             }
         })
 
-        refresh.setOnRefreshListener {
+        binding.refresh.setOnRefreshListener {
             refreshList()
         }
     }
@@ -170,7 +169,7 @@ class ContestsFragment : BaseFragment(), ContestsFilterBottomDialogFragment.OnSu
 
     private fun initContestsList(contestsList: ContestsList) {
         hideLoading()
-        refresh.isRefreshing = false
+        binding.refresh.isRefreshing = false
 
         items.addAll(contestsList.data)
         adapter.setItems(items)

@@ -111,7 +111,7 @@ class AppNavigator(private val activity: AppCompatActivity) : Navigator {
 
     private fun navigateTo(intent: Intent) = activity.startActivity(intent)
 
-    private inline fun <reified T : BaseActivity> getIntent() = Intent(activity, T::class.java)
+    private inline fun <reified T : BaseActivity<*>> getIntent() = Intent(activity, T::class.java)
 }
 
 enum class ScreenType : Serializable {

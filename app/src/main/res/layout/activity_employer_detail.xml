@@ -73,7 +73,9 @@
                             app:cardElevation="0dp"
                             app:cardUseCompatPadding="false">
 
-                            <include layout="@layout/placeholder_employer" />
+                            <include
+                                android:id="@+id/placeholder_employer"
+                                layout="@layout/placeholder_employer" />
 
                             <androidx.constraintlayout.widget.ConstraintLayout
                                 android:id="@+id/content"

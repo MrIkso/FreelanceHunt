@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.annotation.Keep
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.github.vivchar.rendererrecyclerviewadapter.*
-import kotlinx.android.synthetic.main.fragment_pager_employer_projects.*
+
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import tech.hombre.domain.model.ProjectDetail
 import tech.hombre.domain.model.ProjectsList
@@ -15,15 +15,14 @@ import tech.hombre.freelancehunt.common.UserType
 import tech.hombre.freelancehunt.common.extensions.*
 import tech.hombre.freelancehunt.common.widgets.CustomImageView
 import tech.hombre.freelancehunt.common.widgets.EndlessScroll
+import tech.hombre.freelancehunt.databinding.FragmentPagerEmployerProjectsBinding
 import tech.hombre.freelancehunt.ui.base.*
 import tech.hombre.freelancehunt.ui.base.ViewState
 import tech.hombre.freelancehunt.ui.employers.presentation.EmployerProjectsViewModel
 
-class PagerEmployerProjects : BaseFragment() {
+class PagerEmployerProjects : BaseFragment<FragmentPagerEmployerProjectsBinding>(FragmentPagerEmployerProjectsBinding::inflate) {
 
     private val viewModel: EmployerProjectsViewModel by viewModel()
-
-    override fun getLayout() = R.layout.fragment_pager_employer_projects
 
     lateinit var adapter: RendererRecyclerViewAdapter
 
@@ -107,15 +106,15 @@ class PagerEmployerProjects : BaseFragment() {
                 }
             )
         )
-        list.layoutManager = LinearLayoutManager(context)
-        list.adapter = adapter
+        binding.list.layoutManager = LinearLayoutManager(context)
+        binding.list.adapter = adapter
         adapter.registerRenderer(
             LoadMoreViewBinder(
                 R.layout.item_load_more
             )
         )
 
-        list.addOnScrollListener(object : EndlessScroll() {
+        binding.list.addOnScrollListener(object : EndlessScroll() {
             override fun onLoadMore(page: Int, totalItemsCount: Int) {
                 if (viewModel.pagination.next.isNotEmpty()) {
                     adapter.showLoadMore()
@@ -140,12 +139,12 @@ class PagerEmployerProjects : BaseFragment() {
 
     private fun handleError(error: String) {
         hideLoading()
-        showError(error, projectsFragmentContainer)
+        showError(error,  binding.projectsFragmentContainer)
     }
 
     private fun showNoInternetError() {
         hideLoading()
-        snackbar(getString(R.string.no_internet_error_message), projectsFragmentContainer)
+        snackbar(getString(R.string.no_internet_error_message),  binding.projectsFragmentContainer)
     }
 
     private fun initProjectsList(projectsList: ProjectsList) {
@@ -154,8 +153,8 @@ class PagerEmployerProjects : BaseFragment() {
         adapter.setItems(items)
 
         if (items.isEmpty()) {
-            list.gone()
-            empty.visible()
+            binding.list.gone()
+            binding.empty.visible()
         }
     }
 

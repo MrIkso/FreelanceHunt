@@ -7,8 +7,6 @@ import android.content.Intent
 import android.view.Menu
 import android.view.MenuItem
 import android.view.MotionEvent
-import kotlinx.android.synthetic.main.activity_update_job.*
-import kotlinx.android.synthetic.main.appbar.*
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import tech.hombre.domain.model.MyBidsList
 import tech.hombre.domain.model.ProjectDetail
@@ -18,6 +16,7 @@ import tech.hombre.freelancehunt.common.*
 import tech.hombre.freelancehunt.common.extensions.gone
 import tech.hombre.freelancehunt.common.extensions.snackbar
 import tech.hombre.freelancehunt.common.extensions.subscribe
+import tech.hombre.freelancehunt.databinding.ActivityUpdateJobBinding
 import tech.hombre.freelancehunt.framework.app.AppHelper
 import tech.hombre.freelancehunt.ui.base.*
 import tech.hombre.freelancehunt.ui.my.projects.presentation.MyProjectSharedViewModel
@@ -26,7 +25,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 
-class UpdateProjectActivity : BaseActivity() {
+class UpdateProjectActivity : BaseActivity<ActivityUpdateJobBinding>(ActivityUpdateJobBinding::inflate) {
 
     private val viewModel: UpdateProjectViewModel by viewModel()
 
@@ -45,8 +44,7 @@ class UpdateProjectActivity : BaseActivity() {
     var projectDetails: ProjectDetail.Data? = null
 
     override fun viewReady() {
-        setContentView(R.layout.activity_update_job)
-        setSupportActionBar(toolbar)
+        setSupportActionBar(binding.appbar.toolbar)
         setTitle(R.string.update_project)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         intent?.extras?.let {
@@ -78,28 +76,28 @@ class UpdateProjectActivity : BaseActivity() {
         val projectAttributes = projectDetails.attributes
 
         if (isAmend) {
-            description.hint = getString(R.string.project_amend_description_hint)
-            description.setText("")
-            projectTitle.gone()
-            safeView.gone()
-            endDateView.gone()
+            binding.description.hint = getString(R.string.project_amend_description_hint)
+            binding.description.setText("")
+            binding.projectTitle.gone()
+            binding.safeView.gone()
+            binding.endDateView.gone()
         } else {
-            projectTitle.setText(projectAttributes.name)
-            description.setText(projectAttributes.description_html)
+            binding.projectTitle.setText(projectAttributes.name)
+            binding.description.setText(projectAttributes.description_html)
         }
 
-        budgetValue.setText((projectAttributes.budget?.amount ?: "").toString())
+        binding.budgetValue.setText((projectAttributes.budget?.amount ?: "").toString())
 
-        budgetType.setSelection(
+        binding.budgetType.setSelection(
             CurrencyType.values().find { it.currency == projectAttributes.budget?.currency }?.ordinal ?: 0
         )
-        safeType.setSelection(
+        binding.safeType.setSelection(
             SafeType.values().find { it.type == projectAttributes.safe_type }?.ordinal ?: 0
         )
 
         endDate = projectAttributes.expired_at
 
-        description.setOnTouchListener { view, event ->
+        binding.description.setOnTouchListener { view, event ->
             view.parent.requestDisallowInterceptTouchEvent(true)
             when (event.action and MotionEvent.ACTION_MASK) {
                 MotionEvent.ACTION_UP -> view.parent.requestDisallowInterceptTouchEvent(false)
@@ -107,7 +105,7 @@ class UpdateProjectActivity : BaseActivity() {
             false
         }
 
-        skillsList.setOnClickListener {
+        binding.skillsList.setOnClickListener {
             with(
                 AlertDialog.Builder(
                     this,
@@ -127,7 +125,7 @@ class UpdateProjectActivity : BaseActivity() {
             }
         }
 
-        endDateButton.setOnClickListener {
+        binding.endDateButton.setOnClickListener {
             val calendar: Calendar = Calendar.getInstance()
 
             calendar.time = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.getDefault()).parse(endDate)
@@ -146,7 +144,7 @@ class UpdateProjectActivity : BaseActivity() {
                     val format = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.getDefault())
                     endDate = format.format(calendar.time)
 
-                    endDateButton.text = String.format(
+                    binding.endDateButton.text = String.format(
                         "%s/%s/%s",
                         if (dayOfMonth > 9) dayOfMonth else "0$dayOfMonth",
                         if (month + 1 > 9) month + 1 else "0${month + 1}",
@@ -168,16 +166,16 @@ class UpdateProjectActivity : BaseActivity() {
         val mm: Int = calendar.get(Calendar.MONTH) + 1
         val dd: Int = calendar.get(Calendar.DAY_OF_MONTH)
 
-        endDateButton.text = String.format("%s/%s/%s", if (dd > 9) dd else "0$dd", if (mm > 9) mm else "0$mm", yy)
+        binding.endDateButton.text = String.format("%s/%s/%s", if (dd > 9) dd else "0$dd", if (mm > 9) mm else "0$mm", yy)
 
-        buttonSubmit.setOnClickListener {
+        binding.buttonSubmit.setOnClickListener {
             if (correctInputs()) {
-                val currency = CurrencyType.values()[budgetType.selectedItemPosition]
+                val currency = CurrencyType.values()[binding.budgetType.selectedItemPosition]
                 val budget = MyBidsList.Data.Attributes.Budget(
-                    budgetValue.text.toString().toInt(),
+                    binding.budgetValue.text.toString().toInt(),
                     currency.currency
                 )
-                val safe = SafeType.values()[safeType.selectedItemPosition]
+                val safe = SafeType.values()[binding.safeType.selectedItemPosition]
                 val checkedSkill = arrayListOf<Int>()
                 checkedSkills.forEachIndexed { index, skill ->
                     if (skill) {
@@ -189,15 +187,15 @@ class UpdateProjectActivity : BaseActivity() {
                     viewModel.amendProjects(
                         projectId,
                         budget,
-                        description.savedText.toString(),
+                        binding.description.savedText.toString(),
                         checkedSkill
                     ) else
                     viewModel.updateProjects(
                         projectId,
-                        projectTitle.text.toString(),
+                        binding.projectTitle.text.toString(),
                         budget,
                         safe.type ?: "employer",
-                        description.savedText.toString(),
+                        binding.description.savedText.toString(),
                         checkedSkill,
                         endDate
                     )
@@ -217,13 +215,13 @@ class UpdateProjectActivity : BaseActivity() {
                     placeholder += skills[index].name + ","
                 }
             }
-            skillsList.text =
+            binding.skillsList.text =
                 placeholder.removeRange(placeholder.length - 1, placeholder.length)
-        } else skillsList.text = getString(R.string.select)
+        } else binding.skillsList.text = getString(R.string.select)
     }
 
     private fun correctInputs(): Boolean {
-        return description.savedText.isNotEmpty() && !budgetValue.text.isNullOrEmpty() && checkedSkills.any { it }
+        return binding.description.savedText.isNotEmpty() && !binding.budgetValue.text.isNullOrEmpty() && checkedSkills.any { it }
     }
 
     override fun onSupportNavigateUp(): Boolean {
@@ -245,16 +243,16 @@ class UpdateProjectActivity : BaseActivity() {
                 }
                 updateSkillsView()
             }
-            hideLoading(progressBar)
+            hideLoading(binding.appbar.progressBar)
         })
         viewModel.setSkills()
     }
 
     private fun handleViewState(viewState: ViewState<ProjectDetail>) {
         when (viewState) {
-            is Loading -> showLoading(progressBar)
+            is Loading -> showLoading(binding.appbar.progressBar)
             is Success -> {
-                hideLoading(progressBar)
+                hideLoading(binding.appbar.progressBar)
                 sharedViewModel.sendAction(Pair(projectId, viewState.data))
                 finish()
             }
@@ -266,14 +264,14 @@ class UpdateProjectActivity : BaseActivity() {
     }
 
     private fun handleError(error: String) {
-        hideLoading(progressBar)
+        hideLoading(binding.appbar.progressBar)
         showError(error)
     }
 
 
     private fun showNoInternetError() {
-        hideLoading(progressBar)
-        snackbar(getString(R.string.no_internet_error_message), newProjectContainer)
+        hideLoading(binding.appbar.progressBar)
+        snackbar(getString(R.string.no_internet_error_message), binding.newProjectContainer)
     }
 
     override fun onBackPressed() {

@@ -7,8 +7,6 @@ import android.content.Intent
 import android.view.Menu
 import android.view.MenuItem
 import android.view.MotionEvent
-import kotlinx.android.synthetic.main.activity_new_job.*
-import kotlinx.android.synthetic.main.appbar.*
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import tech.hombre.domain.model.MyBidsList
 import tech.hombre.domain.model.ProjectDetail
@@ -19,6 +17,7 @@ import tech.hombre.freelancehunt.common.extensions.gone
 import tech.hombre.freelancehunt.common.extensions.snackbar
 import tech.hombre.freelancehunt.common.extensions.subscribe
 import tech.hombre.freelancehunt.common.extensions.visible
+import tech.hombre.freelancehunt.databinding.ActivityNewJobBinding
 import tech.hombre.freelancehunt.framework.app.AppHelper
 import tech.hombre.freelancehunt.ui.base.*
 import tech.hombre.freelancehunt.ui.project.presentation.NewProjectViewModel
@@ -26,7 +25,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 
-class NewProjectActivity : BaseActivity() {
+class NewProjectActivity : BaseActivity<ActivityNewJobBinding>(ActivityNewJobBinding::inflate) {
 
     private val viewModel: NewProjectViewModel by viewModel()
 
@@ -41,8 +40,7 @@ class NewProjectActivity : BaseActivity() {
     private var endDate = ""
 
     override fun viewReady() {
-        setContentView(R.layout.activity_new_job)
-        setSupportActionBar(toolbar)
+        setSupportActionBar(binding.appbar.toolbar)
         setTitle(R.string.new_project)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         intent?.extras?.let {
@@ -69,7 +67,7 @@ class NewProjectActivity : BaseActivity() {
     }
 
     private fun initViews() {
-        description.setOnTouchListener { view, event ->
+        binding.description.setOnTouchListener { view, event ->
             view.parent.requestDisallowInterceptTouchEvent(true)
             when (event.action and MotionEvent.ACTION_MASK) {
                 MotionEvent.ACTION_UP -> view.parent.requestDisallowInterceptTouchEvent(false)
@@ -77,7 +75,7 @@ class NewProjectActivity : BaseActivity() {
             false
         }
 
-        skillsList.setOnClickListener {
+        binding.skillsList.setOnClickListener {
             with(
                 AlertDialog.Builder(
                     this,
@@ -100,16 +98,16 @@ class NewProjectActivity : BaseActivity() {
                                     placeholder += skills[index].name + ","
                                 }
                             }
-                            skillsList.text =
+                            binding.skillsList.text =
                                 placeholder.removeRange(placeholder.length - 1, placeholder.length)
-                        } else skillsList.text = getString(R.string.select)
+                        } else binding.skillsList.text = getString(R.string.select)
                     }
                 setPositiveButton("OK") { dialog, which -> }
                 show()
             }
         }
 
-        endDateButton.setOnClickListener {
+        binding.endDateButton.setOnClickListener {
             val calendar: Calendar = Calendar.getInstance()
 
             calendar.time = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.getDefault()).parse(endDate)
@@ -128,7 +126,7 @@ class NewProjectActivity : BaseActivity() {
                     val format = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.getDefault())
                     endDate = format.format(calendar.time)
 
-                    endDateButton.text = String.format(
+                    binding.endDateButton.text = String.format(
                         "%s/%s/%s",
                         if (dayOfMonth > 9) dayOfMonth else "0$dayOfMonth",
                         if (month + 1 > 9) month + 1 else "0${month + 1}",
@@ -145,26 +143,26 @@ class NewProjectActivity : BaseActivity() {
         }
 
         if (!isPersonal) {
-            plusView.visible()
-            isForPlus.isEnabled = appPreferences.getCurrentUserProfile()?.is_plus_active ?: false
-        } else plusView.gone()
+            binding.plusView.visible()
+            binding.isForPlus.isEnabled = appPreferences.getCurrentUserProfile()?.is_plus_active ?: false
+        } else binding.plusView.gone()
 
         val calendar: Calendar = Calendar.getInstance()
         val yy: Int = calendar.get(Calendar.YEAR)
         val mm: Int = calendar.get(Calendar.MONTH) + 1
         val dd: Int = calendar.get(Calendar.DAY_OF_MONTH)
-        endDateButton.text = String.format("%s/%s/%s", if (dd > 9) dd else "0$dd", if (mm > 9) mm else "0$mm", yy)
+        binding.endDateButton.text = String.format("%s/%s/%s", if (dd > 9) dd else "0$dd", if (mm > 9) mm else "0$mm", yy)
         val format = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.getDefault())
         endDate = format.format(calendar.time)
 
-        buttonSubmit.setOnClickListener {
+        binding.buttonSubmit.setOnClickListener {
             if (correctInputs()) {
-                val currency = CurrencyType.values()[budgetType.selectedItemPosition]
+                val currency = CurrencyType.values()[binding.budgetType.selectedItemPosition]
                 val budget = MyBidsList.Data.Attributes.Budget(
-                    budgetValue.text.toString().toInt(),
+                    binding.budgetValue.text.toString().toInt(),
                     currency.currency
                 )
-                val safe = SafeType.values()[safeType.selectedItemPosition]
+                val safe = SafeType.values()[binding.safeType.selectedItemPosition]
                 val checkedSkill = arrayListOf<Int>()
                 checkedSkills.forEachIndexed { index, skill ->
                     if (skill) {
@@ -174,23 +172,23 @@ class NewProjectActivity : BaseActivity() {
 
                 if (isPersonal)
                     viewModel.addNewPersonalProject(
-                        projectTitle.text.toString(),
+                        binding.projectTitle.text.toString(),
                         freelancerId,
                         isPersonal,
                         budget,
                         safe.type ?: "employer",
-                        description.savedText.toString(),
+                        binding.description.savedText.toString(),
                         checkedSkill,
                         endDate
                     ) else
                     viewModel.addNewProject(
-                        projectTitle.text.toString(),
+                        binding.projectTitle.text.toString(),
                         budget,
                         safe.type ?: "employer",
-                        description.savedText.toString(),
+                        binding.description.savedText.toString(),
                         checkedSkill,
                         endDate,
-                        isForPlus.isChecked
+                        binding.isForPlus.isChecked
                     )
 
             } else {
@@ -200,7 +198,10 @@ class NewProjectActivity : BaseActivity() {
     }
 
     private fun correctInputs(): Boolean {
-        return endDate.isNotEmpty() && !projectTitle.text.isNullOrEmpty() && !budgetValue.text.isNullOrEmpty() && description.savedText.isNotEmpty() && checkedSkills.any { it }
+        return endDate.isNotEmpty() &&
+                !binding.projectTitle.text.isNullOrEmpty() &&
+                !binding.budgetValue.text.isNullOrEmpty() &&
+                binding.description.savedText.isNotEmpty() && checkedSkills.any { it }
     }
 
     override fun onSupportNavigateUp(): Boolean {
@@ -213,16 +214,16 @@ class NewProjectActivity : BaseActivity() {
         viewModel.skills.subscribe(this, {
             skills = it
             checkedSkills = skills.map { false }.toBooleanArray()
-            hideLoading(progressBar)
+            hideLoading(binding.appbar.progressBar)
         })
         viewModel.setSkills()
     }
 
     private fun handleViewState(viewState: ViewState<ProjectDetail>) {
         when (viewState) {
-            is Loading -> showLoading(progressBar)
+            is Loading -> showLoading(binding.appbar.progressBar)
             is Success -> {
-                hideLoading(progressBar)
+                hideLoading(binding.appbar.progressBar)
                 finish()
                 appNavigator.showProjectDetails(viewState.data.data)
             }
@@ -234,14 +235,14 @@ class NewProjectActivity : BaseActivity() {
     }
 
     private fun handleError(error: String) {
-        hideLoading(progressBar)
+        hideLoading(binding.appbar.progressBar)
         showError(error)
     }
 
 
     private fun showNoInternetError() {
-        hideLoading(progressBar)
-        snackbar(getString(R.string.no_internet_error_message), newProjectContainer)
+        hideLoading(binding.appbar.progressBar)
+        snackbar(getString(R.string.no_internet_error_message), binding.newProjectContainer)
     }
 
     override fun onBackPressed() {

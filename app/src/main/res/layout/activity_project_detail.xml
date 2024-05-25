@@ -76,7 +76,8 @@
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toTopOf="parent">
 
-                            <include layout="@layout/placeholder_project" />
+                            <include android:id="@+id/placeholder_project"
+                                layout="@layout/placeholder_project" />
 
                             <androidx.constraintlayout.widget.ConstraintLayout
                                 android:id="@+id/content"

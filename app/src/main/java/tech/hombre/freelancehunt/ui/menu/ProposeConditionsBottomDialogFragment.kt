@@ -4,16 +4,14 @@ package tech.hombre.freelancehunt.ui.menu
 import android.content.Context
 import android.os.Bundle
 import androidx.annotation.Keep
-import kotlinx.android.synthetic.main.bottom_menu_propose_conditions.*
 import tech.hombre.domain.model.MyBidsList
 import tech.hombre.domain.model.WorkspaceDetail
 import tech.hombre.freelancehunt.R
 import tech.hombre.freelancehunt.common.*
+import tech.hombre.freelancehunt.databinding.BottomMenuProposeConditionsBinding
 import tech.hombre.freelancehunt.ui.base.BaseBottomDialogFragment
 
-class ProposeConditionsBottomDialogFragment : BaseBottomDialogFragment() {
-
-    override fun getLayout() = R.layout.bottom_menu_propose_conditions
+class ProposeConditionsBottomDialogFragment : BaseBottomDialogFragment<BottomMenuProposeConditionsBinding>(BottomMenuProposeConditionsBinding::inflate) {
 
     private var listener: OnConditionsListener? = null
 
@@ -34,16 +32,16 @@ class ProposeConditionsBottomDialogFragment : BaseBottomDialogFragment() {
             budget = MyBidsList.Data.Attributes.Budget(budget_con.amount, budget_con.currency)
             day = it.getInt(EXTRA_4, -1)
 
-            costValue.setText(budget.amount.toString())
-            costType.setSelection(
+            binding.costValue.setText(budget.amount.toString())
+            binding.costType.setSelection(
                 CurrencyType.values().find { it.currency == budget.currency }?.ordinal ?: 0
             )
-            safeType.setSelection(
+            binding.safeType.setSelection(
                 SafeType.values().find { it.type == safe!!.type }?.ordinal ?: 0
             )
-            days.setText(day.toString())
+            binding.days.setText(day.toString())
 
-            buttonAddConditions.setOnClickListener {
+            binding.buttonAddConditions.setOnClickListener {
                 if (correctInputs()) {
                     listener?.onConditionsChanged(
                         ids,
@@ -63,11 +61,11 @@ class ProposeConditionsBottomDialogFragment : BaseBottomDialogFragment() {
     }
 
     private fun correctInputs(): Boolean {
-        cost = costValue.text.toString().toIntOrNull() ?: 0
-        val currency = CurrencyType.values()[costType.selectedItemPosition]
+        cost = binding.costValue.text.toString().toIntOrNull() ?: 0
+        val currency = CurrencyType.values()[binding.costType.selectedItemPosition]
         budget = MyBidsList.Data.Attributes.Budget(cost, currency.currency)
-        day = days.text.toString().toIntOrNull() ?: 0
-        safe = SafeType.values()[safeType.selectedItemPosition]
+        day = binding.days.text.toString().toIntOrNull() ?: 0
+        safe = SafeType.values()[binding.safeType.selectedItemPosition]
         val costVerified: Boolean = when {
             currency == CurrencyType.UAH && cost < 200 -> {
                 showError(getString(R.string.safe_cost_minimal))
@@ -80,7 +78,7 @@ class ProposeConditionsBottomDialogFragment : BaseBottomDialogFragment() {
             else -> true
         }
         if (!costVerified) return false
-        comm = comment.savedText.toString()
+        comm = binding.comment.savedText.toString()
         if (comm.isEmpty()) {
             showError(getString(R.string.propose_comment_min))
             return false

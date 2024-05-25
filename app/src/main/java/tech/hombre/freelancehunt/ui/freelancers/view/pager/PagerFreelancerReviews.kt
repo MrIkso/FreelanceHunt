@@ -9,7 +9,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.github.vivchar.rendererrecyclerviewadapter.*
-import kotlinx.android.synthetic.main.fragment_pager_freelancer_reviews.*
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import tech.hombre.domain.model.FreelancerReviews
@@ -18,13 +17,14 @@ import tech.hombre.freelancehunt.common.EXTRA_1
 import tech.hombre.freelancehunt.common.extensions.*
 import tech.hombre.freelancehunt.common.widgets.CustomImageView
 import tech.hombre.freelancehunt.common.widgets.EndlessScroll
+import tech.hombre.freelancehunt.databinding.FragmentPagerEmployerReviewsBinding
+import tech.hombre.freelancehunt.databinding.FragmentPagerFreelancerReviewsBinding
 import tech.hombre.freelancehunt.ui.base.*
 import tech.hombre.freelancehunt.ui.base.ViewState
 import tech.hombre.freelancehunt.ui.freelancers.presentation.FreelancerPublicViewModel
 import tech.hombre.freelancehunt.ui.freelancers.presentation.FreelancerReviewsViewModel
 
-class PagerFreelancerReviews : BaseFragment() {
-    override fun getLayout() = R.layout.fragment_pager_freelancer_reviews
+class PagerFreelancerReviews : BaseFragment<FragmentPagerFreelancerReviewsBinding>(FragmentPagerFreelancerReviewsBinding::inflate) {
 
     private val viewModel: FreelancerReviewsViewModel by viewModel()
 
@@ -183,15 +183,15 @@ class PagerFreelancerReviews : BaseFragment() {
                 }
             )
         )
-        list.layoutManager = LinearLayoutManager(activity)
-        list.adapter = adapter
+        binding.list.layoutManager = LinearLayoutManager(activity)
+        binding.list.adapter = adapter
         adapter.registerRenderer(
             LoadMoreViewBinder(
                 R.layout.item_load_more
             )
         )
 
-        list.addOnScrollListener(object : EndlessScroll() {
+        binding.list.addOnScrollListener(object : EndlessScroll() {
             override fun onLoadMore(page: Int, totalItemsCount: Int) {
                 if (items.isNotEmpty() && viewModel.pagination.next.isNotEmpty()) {
                     adapter.showLoadMore()
@@ -203,12 +203,12 @@ class PagerFreelancerReviews : BaseFragment() {
 
     private fun handleError(error: String) {
         hideLoading()
-        showError(error, reviewsContainer)
+        showError(error, binding.reviewsContainer)
     }
 
     private fun showNoInternetError() {
         hideLoading()
-        snackbar(getString(R.string.no_internet_error_message), reviewsContainer)
+        snackbar(getString(R.string.no_internet_error_message), binding.reviewsContainer)
     }
 
     companion object {

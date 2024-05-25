@@ -4,14 +4,13 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import com.google.android.material.tabs.TabLayout
-import kotlinx.android.synthetic.main.activity_employer_detail.*
-import kotlinx.android.synthetic.main.placeholder_employer.*
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import tech.hombre.domain.model.EmployerDetail
 import tech.hombre.freelancehunt.R
 import tech.hombre.freelancehunt.common.EXTRA_1
 import tech.hombre.freelancehunt.common.EXTRA_2
 import tech.hombre.freelancehunt.common.extensions.*
+import tech.hombre.freelancehunt.databinding.ActivityEmployerDetailBinding
 import tech.hombre.freelancehunt.ui.base.*
 import tech.hombre.freelancehunt.ui.employers.presentation.EmployerDetailViewModel
 import tech.hombre.freelancehunt.ui.employers.presentation.EmployerPublicViewModel
@@ -22,7 +21,7 @@ import tech.hombre.freelancehunt.ui.menu.BottomMenuBuilder
 import tech.hombre.freelancehunt.ui.menu.CreateThreadBottomDialogFragment
 
 
-class EmployerDetailActivity : BaseActivity(),
+class EmployerDetailActivity : BaseActivity<ActivityEmployerDetailBinding>(ActivityEmployerDetailBinding::inflate),
     CreateThreadBottomDialogFragment.OnCreateThreadListener {
 
     private val viewModel: EmployerDetailViewModel by viewModel()
@@ -36,8 +35,7 @@ class EmployerDetailActivity : BaseActivity(),
     var employerUrl = ""
 
     override fun viewReady() {
-        setContentView(R.layout.activity_employer_detail)
-        setSupportActionBar(toolbar)
+        setSupportActionBar(binding.toolbar)
         setTitle(R.string.employer_view)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         intent?.extras?.let {
@@ -74,10 +72,10 @@ class EmployerDetailActivity : BaseActivity(),
         viewModel.viewState.subscribe(this, ::handleViewState)
         viewModel.action.subscribe(this, ::handleActionViewState)
         viewModel.countries.subscribe(this, {
-            hideLoading(progressBar)
+            hideLoading(binding.progressBar)
             if (countryId != -1) {
                 val country = it.find { it.id == countryId }
-                if (country != null) locationIcon.setUrlSVG("https://freelancehunt.com/static/images/flags/4x3/${country.iso2.toLowerCase()}.svg")
+                if (country != null) binding.locationIcon.setUrlSVG("https://freelancehunt.com/static/images/flags/4x3/${country.iso2.toLowerCase()}.svg")
             }
         })
         viewModel.setCountries()
@@ -85,7 +83,7 @@ class EmployerDetailActivity : BaseActivity(),
 
     private fun handleViewState(viewState: ViewState<EmployerDetail>) {
         when (viewState) {
-            is Loading -> showLoading(progressBar)
+            is Loading -> showLoading(binding.progressBar)
             is Success -> {
                 initEmployerDetails(viewState.data.data)
                 viewModel.setCountries()
@@ -96,35 +94,37 @@ class EmployerDetailActivity : BaseActivity(),
     }
 
     private fun handleActionViewState(viewState: ViewState<String>) {
-        hideLoading(progressBar)
+        hideLoading(binding.progressBar)
         when (viewState) {
             is Success -> {
                 when (viewState.data) {
                     "message" -> toast(getString(R.string.message_sent))
                 }
             }
+
+            else -> {}
         }
     }
 
     private fun initEmployerDetails(details: EmployerDetail.Data) {
-        hideLoading(progressBar)
-        preview.visibility = View.INVISIBLE
-        content.visible()
+        hideLoading(binding.progressBar)
+        binding.placeholderEmployer.preview.visibility = View.INVISIBLE
+        binding.content.visible()
 
         profileId = details.id
 
         employerUrl = details.links.self.web
 
-        toolbar.subtitle = details.attributes.login
+        binding.toolbar.subtitle = details.attributes.login
 
 
-        avatar.setUrl(details.attributes.avatar.large.url, isCircle = true)
-        name.text = "${details.attributes.first_name} ${details.attributes.last_name}"
-        login.text = details.attributes.login
-        rating.text = details.attributes.rating.toString()
-        verified.visibility = details.attributes.verification.identity.toVisibleState()
-        isplus.visibility = details.attributes.is_plus_active.toVisibleState()
-        location.text = details.attributes.location?.let {
+        binding.avatar.setUrl(details.attributes.avatar.large.url, isCircle = true)
+        binding.name.text = "${details.attributes.first_name} ${details.attributes.last_name}"
+        binding.login.text = details.attributes.login
+        binding.rating.text = details.attributes.rating.toString()
+        binding.verified.visibility = details.attributes.verification.identity.toVisibleState()
+        binding.isplus.visibility = details.attributes.is_plus_active.toVisibleState()
+        binding.location.text = details.attributes.location?.let {
             if (details.attributes.location!!.country != null && details.attributes.location!!.city != null)
                 "${details.attributes.location!!.country!!.name}, ${details.attributes.location!!.city!!.name}"
             else if (details.attributes.location!!.country != null)
@@ -133,19 +133,19 @@ class EmployerDetailActivity : BaseActivity(),
         if (details.attributes.location != null && details.attributes.location!!.country != null) {
             countryId = details.attributes.location!!.country!!.id
         }
-        voteup.text = details.attributes.positive_reviews.toString()
-        votedown.text = details.attributes.negative_reviews.toString()
-        arbitrages.text = details.attributes.arbitrages.toString()
+        binding.voteup.text = details.attributes.positive_reviews.toString()
+        binding.votedown.text = details.attributes.negative_reviews.toString()
+        binding.arbitrages.text = details.attributes.arbitrages.toString()
         if (details.attributes.birth_date != null) {
-            birthdate.text = details.attributes.birth_date!!.parseSimpleDate()
+            binding.birthdate.text = details.attributes.birth_date!!.parseSimpleDate()
                 ?.let { calculateAge(it).getEnding(this, R.array.ending_years) }
-        } else birthdate.gone()
+        } else binding.birthdate.gone()
 
-        visitedAt.text = details.attributes.visited_at?.parseFullDate(true).getTimeAgo()
+        binding.visitedAt.text = details.attributes.visited_at?.parseFullDate(true).getTimeAgo()
 
         if (profileId != appPreferences.getCurrentUserId()) {
-            buttonMessage.visible()
-            buttonMessage.setOnClickListener {
+            binding.buttonMessage.visible()
+            binding.buttonMessage.setOnClickListener {
                 BottomMenuBuilder(
                     this,
                     supportFragmentManager,
@@ -161,16 +161,16 @@ class EmployerDetailActivity : BaseActivity(),
             false
         )
 
-        tabs.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+        binding.tabs.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabReselected(tab: TabLayout.Tab?) {
-                containerScroller.scrollTo(0, 0)
+                binding.containerScroller.scrollTo(0, 0)
             }
 
             override fun onTabUnselected(tab: TabLayout.Tab?) {
             }
 
             override fun onTabSelected(tab: TabLayout.Tab?) {
-                containerScroller.scrollTo(0, 0)
+                binding.containerScroller.scrollTo(0, 0)
                 tab?.position?.let {
                     when (it) {
                         0 -> supportFragmentManager.switch(
@@ -201,13 +201,13 @@ class EmployerDetailActivity : BaseActivity(),
 
 
     private fun handleError(error: String) {
-        hideLoading(progressBar)
+        hideLoading(binding.progressBar)
         showError(error)
     }
 
     private fun showNoInternetError() {
-        hideLoading(progressBar)
-        snackbar(getString(R.string.no_internet_error_message), employersActivityContainer)
+        hideLoading(binding.progressBar)
+        snackbar(getString(R.string.no_internet_error_message), binding.employersActivityContainer)
     }
 
     override fun onThreadCreated(subject: String, message: String, toProfileId: Int) {

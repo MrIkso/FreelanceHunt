@@ -7,7 +7,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import kotlinx.android.synthetic.main.bottom_menu_project_filter.*
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import tech.hombre.data.database.dao.SkillsDao
 import tech.hombre.domain.model.SkillList
@@ -17,12 +16,11 @@ import tech.hombre.freelancehunt.common.EXTRA_2
 import tech.hombre.freelancehunt.common.EXTRA_3
 import tech.hombre.freelancehunt.common.extensions.launch
 import tech.hombre.freelancehunt.common.extensions.subscribe
+import tech.hombre.freelancehunt.databinding.BottomMenuProjectFilterBinding
 import tech.hombre.freelancehunt.framework.app.AppHelper
 import tech.hombre.freelancehunt.ui.base.BaseBottomDialogFragment
 
-class ProjectFilterBottomDialogFragment : BaseBottomDialogFragment() {
-
-    override fun getLayout() = R.layout.bottom_menu_project_filter
+class ProjectFilterBottomDialogFragment : BaseBottomDialogFragment<BottomMenuProjectFilterBinding>(BottomMenuProjectFilterBinding::inflate) {
 
     private val viewModel: ProjectFilterViewModel by viewModel()
 
@@ -53,17 +51,17 @@ class ProjectFilterBottomDialogFragment : BaseBottomDialogFragment() {
 
     private fun initViews() {
 
-        isForPlus.isChecked = onlyForPlus
-        isOnlyMySkills.isChecked = onlyMySkills
+        binding.isForPlus.isChecked = onlyForPlus
+        binding.isOnlyMySkills.isChecked = onlyMySkills
 
-        isOnlyMySkills.setOnCheckedChangeListener { buttonView, isChecked ->
+        binding.isOnlyMySkills.setOnCheckedChangeListener { buttonView, isChecked ->
             if (isChecked && checkedSkills.contains(true)) {
                 checkedSkills = BooleanArray(skills.size)
                 updateSkillsView()
             }
         }
 
-        skillsList.setOnClickListener {
+        binding.skillsList.setOnClickListener {
             with(
                 AlertDialog.Builder(
                     requireContext(),
@@ -84,7 +82,7 @@ class ProjectFilterBottomDialogFragment : BaseBottomDialogFragment() {
             }
         }
 
-        buttonSubmit.setOnClickListener {
+        binding.buttonSubmit.setOnClickListener {
             val checked = arrayListOf<Int>()
             checkedSkills.forEachIndexed { index, b ->
                 if (b) {
@@ -92,9 +90,9 @@ class ProjectFilterBottomDialogFragment : BaseBottomDialogFragment() {
                 }
             }
             listener?.onSubmitProjectFilter(
-                isOnlyMySkills.isChecked,
+                binding.isOnlyMySkills.isChecked,
                 checked.toIntArray(),
-                isForPlus.isChecked
+                binding.isForPlus.isChecked
             )
             dismiss()
         }
@@ -122,11 +120,11 @@ class ProjectFilterBottomDialogFragment : BaseBottomDialogFragment() {
                     placeholder += skills[index].name + ","
                 }
             }
-            skillsList.text =
+            binding.skillsList.text =
                 placeholder.removeRange(placeholder.length - 1, placeholder.length)
-            if (isOnlyMySkills.isChecked) isOnlyMySkills.isChecked = false
+            if (binding.isOnlyMySkills.isChecked) binding.isOnlyMySkills.isChecked = false
         } else {
-            skillsList.text = getString(R.string.select)
+            binding.skillsList.text = getString(R.string.select)
         }
     }
 

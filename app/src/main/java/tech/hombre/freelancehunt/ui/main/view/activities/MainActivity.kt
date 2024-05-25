@@ -5,16 +5,13 @@ import android.content.res.Configuration
 import android.os.Bundle
 import android.text.SpannableString
 import android.text.util.Linkify
+import android.view.MenuItem
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.graphics.drawable.DrawerArrowDrawable
 import androidx.core.view.GravityCompat
 import androidx.core.view.isVisible
-import kotlinx.android.synthetic.main.activity_container.*
-import kotlinx.android.synthetic.main.appbar.*
-import kotlinx.android.synthetic.main.drawer.*
-import kotlinx.android.synthetic.main.item_menu_threads.view.*
-import kotlinx.android.synthetic.main.navigation_header.view.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -30,6 +27,10 @@ import tech.hombre.freelancehunt.common.extensions.switch
 import tech.hombre.freelancehunt.common.provider.AutoStartPermissionHelper
 import tech.hombre.freelancehunt.common.provider.PowerSaverHelper
 import tech.hombre.freelancehunt.common.widgets.BadgeDrawerArrowDrawable
+import tech.hombre.freelancehunt.databinding.ActivityContainerBinding
+import tech.hombre.freelancehunt.databinding.ItemMenuProfileBinding
+import tech.hombre.freelancehunt.databinding.ItemMenuThreadsBinding
+import tech.hombre.freelancehunt.databinding.NavigationHeaderBinding
 import tech.hombre.freelancehunt.framework.app.AppHelper
 import tech.hombre.freelancehunt.framework.tasks.TasksManger
 import tech.hombre.freelancehunt.routing.AppNavigator
@@ -53,11 +54,12 @@ import tech.hombre.freelancehunt.ui.threads.view.ThreadsFragment
 import java.util.*
 
 
-class MainActivity : BaseActivity() {
+class MainActivity : BaseActivity<ActivityContainerBinding>(ActivityContainerBinding::inflate) {
 
     private lateinit var drawerToggle: ActionBarDrawerToggle
 
     private lateinit var badgeToggleDrawable: BadgeDrawerArrowDrawable
+    private lateinit var headerViewBinding: NavigationHeaderBinding
 
     private val viewModel: MainViewModel by viewModel()
 
@@ -71,7 +73,6 @@ class MainActivity : BaseActivity() {
     private val delay = 15000L
 
     override fun viewReady() {
-        setContentView(R.layout.activity_container)
         initViews()
         subscribeToData()
         when (intent.getSerializableExtra(AppNavigator.SCREEN_TYPE)) {
@@ -111,40 +112,51 @@ class MainActivity : BaseActivity() {
         )
         intent.intent?.let {
             startActivity(it)
-        } ?: if (!intent.isWhiteListed) if (!appPreferences.isAutoStartPermissionsRequired()) {
-            if (AutoStartPermissionHelper.getInstance().isAutoStartPermissionAvailable(this)) with(
-                AlertDialog.Builder(
-                    this,
-                    AppHelper.getDialogTheme(appPreferences.getAppTheme())
-                )
-            ) {
-                setCancelable(false)
-                setMessage(getString(R.string.autostart_permissions_dialog_info))
-                setPositiveButton(android.R.string.ok) { dialog: DialogInterface, _: Int ->
+        } ?: if (!intent.isWhiteListed) {
+            if (!appPreferences.isAutoStartPermissionsRequired()) {
+                if (AutoStartPermissionHelper.getInstance()
+                        .isAutoStartPermissionAvailable(this)
+                ) with(
+                    AlertDialog.Builder(
+                        this,
+                        AppHelper.getDialogTheme(appPreferences.getAppTheme())
+                    )
+                ) {
+                    setCancelable(false)
+                    setMessage(getString(R.string.autostart_permissions_dialog_info))
+                    setPositiveButton(android.R.string.ok) { dialog: DialogInterface, _: Int ->
 
-                    if (AutoStartPermissionHelper.getInstance().getAutoStartPermission(context)) {
-                        appPreferences.setAutoStartPermissionsRequired()
-                        showDeveloperNotify()
-                    } else with(
-                        AlertDialog.Builder(
-                            context,
-                            AppHelper.getDialogTheme(appPreferences.getAppTheme())
-                        )
-                    ) {
-                        setCancelable(false)
-                        setMessage(getString(R.string.autostart_permissions_required_error))
-                        setPositiveButton(android.R.string.ok) { dialog: DialogInterface, _: Int ->
+                        if (AutoStartPermissionHelper.getInstance()
+                                .getAutoStartPermission(context)
+                        ) {
                             appPreferences.setAutoStartPermissionsRequired()
                             showDeveloperNotify()
+                        } else with(
+                            AlertDialog.Builder(
+                                context,
+                                AppHelper.getDialogTheme(appPreferences.getAppTheme())
+                            )
+                        ) {
+                            setCancelable(false)
+                            setMessage(getString(R.string.autostart_permissions_required_error))
+                            setPositiveButton(android.R.string.ok) { dialog: DialogInterface, _: Int ->
+                                appPreferences.setAutoStartPermissionsRequired()
+                                showDeveloperNotify()
+                            }
+                            show()
                         }
-                        show()
                     }
+                    show()
+                } else {
+                    appPreferences.setAutoStartPermissionsRequired()
+                    showDeveloperNotify()
                 }
-                show()
-            } else {
-                appPreferences.setAutoStartPermissionsRequired()
-                showDeveloperNotify()
             }
+            else {
+
+            }
+        } else{
+
         }
     }
 
@@ -169,34 +181,36 @@ class MainActivity : BaseActivity() {
     }
 
     override fun onBackPressed() {
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawers()
+        if (binding.drawer.isDrawerOpen(GravityCompat.START)) {
+            binding.drawer.closeDrawers()
         } else super.onBackPressed()
     }
 
     private fun initViews() {
-        setSupportActionBar(toolbar)
+        setSupportActionBar(binding.appbar.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        val header = binding.drawerLayout.navigation.getHeaderView(0)
+        headerViewBinding = NavigationHeaderBinding.bind(header)
 
         drawerToggle = ActionBarDrawerToggle(
             this,
-            drawer,
-            toolbar,
+            binding.drawer,
+            binding.appbar.toolbar,
             R.string.drawer_open,
             R.string.drawer_close
         )
         drawerToggle.isDrawerIndicatorEnabled = true
         drawerToggle.syncState()
 
-        drawer.addDrawerListener(drawerToggle)
-        navigation.menu.findItem(R.id.menu_contests).isVisible =
+        binding.drawer.addDrawerListener(drawerToggle)
+        binding.drawerLayout.navigation.menu.findItem(R.id.menu_contests).isVisible =
             appPreferences.getCurrentUserType() == UserType.EMPLOYER.type
-        navigation.menu.findItem(R.id.menu_bids).isVisible =
+        binding.drawerLayout.navigation.menu.findItem(R.id.menu_bids).isVisible =
             appPreferences.getCurrentUserType() == UserType.FREELANCER.type
-        navigation.menu.findItem(R.id.menu_projects).isVisible =
+        binding.drawerLayout.navigation.menu.findItem(R.id.menu_projects).isVisible =
             appPreferences.getCurrentUserType() == UserType.EMPLOYER.type
-        navigation.setNavigationItemSelectedListener {
-            if (navigation.checkedItem != it) {
+        binding.drawerLayout.navigation.setNavigationItemSelectedListener {
+            if (binding.drawerLayout.navigation.checkedItem != it) {
                 when (it.itemId) {
                     R.id.menu_main -> supportFragmentManager.switch(
                         R.id.fragmentContainer,
@@ -258,7 +272,7 @@ class MainActivity : BaseActivity() {
                     selectMenuItem(it.itemId, true)
                 }
             }
-            drawer.closeDrawers()
+            binding.drawer.closeDrawers()
             true
         }
         updateHeader(appPreferences.getCurrentUserProfile()!!)
@@ -295,9 +309,9 @@ class MainActivity : BaseActivity() {
     }
 
     private fun handlePremiumState(isPremium: Boolean) {
-        val header = navigation.getHeaderView(0)
-        header.isPlus.isVisible = isPremium
-        navigation.menu.findItem(R.id.menu_buy_premium).isVisible = !isPremium
+
+        headerViewBinding.isPlus.isVisible = isPremium
+        binding.drawerLayout.navigation.menu.findItem(R.id.menu_buy_premium).isVisible = !isPremium
     }
 
     private fun handleViewState(viewState: ViewState<MyProfile.Data.Attributes>) {
@@ -309,26 +323,34 @@ class MainActivity : BaseActivity() {
                 viewModel.checkMessages()
             }
             is Error -> handleError(viewState.error.localizedMessage)
+            else -> {}
         }
     }
 
     private fun updateDrawer(newMassages: Boolean?, rating: Int?) {
-        if (rating != null) navigation.menu.findItem(R.id.menu_profile).actionView?.let {
-            it.subtitle.text = rating.toString()
+        if (rating != null) {
+            binding.drawerLayout.navigation.menu.findItem(R.id.menu_profile).actionView?.let {
+                val menuProfileBinding = ItemMenuProfileBinding.bind(it)
+                menuProfileBinding.subtitle.text = rating.toString()
+            }
         }
-        if (newMassages != null) navigation.menu.findItem(R.id.menu_threads).actionView?.let {
-            if (newMassages) {
-                it.icon.setImageResource(R.drawable.mail)
-                it.subtitle.text = getString(R.string.have_messages)
-                badgeToggleDrawable = BadgeDrawerArrowDrawable(supportActionBar?.themedContext)
-                drawerToggle.drawerArrowDrawable = badgeToggleDrawable
+        if (newMassages != null) {
+            binding.drawerLayout.navigation.menu.findItem(R.id.menu_threads)?.let { menuItem ->
+                val menuThreadsBinding = ItemMenuThreadsBinding.bind(menuItem.actionView!!)
+                if (newMassages) {
 
-            } else {
-                it.icon.setImageResource(R.drawable.mail_empty)
-                it.subtitle.text = getString(R.string.not_have_messages)
-                badgeToggleDrawable = BadgeDrawerArrowDrawable(supportActionBar?.themedContext)
-                drawerToggle.drawerArrowDrawable =
-                    DrawerArrowDrawable(supportActionBar?.themedContext)
+                    menuThreadsBinding.icon.setImageResource(R.drawable.mail)
+                    menuThreadsBinding.subtitle.text = getString(R.string.have_messages)
+                    badgeToggleDrawable = BadgeDrawerArrowDrawable(supportActionBar?.themedContext)
+                    drawerToggle.drawerArrowDrawable = badgeToggleDrawable
+
+                } else {
+                    menuThreadsBinding.icon.setImageResource(R.drawable.mail_empty)
+                    menuThreadsBinding.subtitle.text = getString(R.string.not_have_messages)
+                    badgeToggleDrawable = BadgeDrawerArrowDrawable(supportActionBar?.themedContext)
+                    drawerToggle.drawerArrowDrawable =
+                        DrawerArrowDrawable(supportActionBar?.themedContext)
+                }
             }
         }
 
@@ -340,6 +362,7 @@ class MainActivity : BaseActivity() {
                 updateDrawer(messageViewState.data, null)
             }
             is Error -> handleError(messageViewState.error.localizedMessage)
+            else -> {}
         }
     }
 
@@ -349,6 +372,7 @@ class MainActivity : BaseActivity() {
                 sharedViewModelMain.setFeedBadgeCounter(feedViewState.data)
             }
             is Error -> handleError(feedViewState.error.localizedMessage)
+            else -> {}
         }
     }
 
@@ -357,13 +381,13 @@ class MainActivity : BaseActivity() {
     }
 
     private fun updateHeader(profile: MyProfile.Data.Attributes) {
-        val header = navigation.getHeaderView(0)
+        val header = binding.drawerLayout.navigation.getHeaderView(0)
         header.apply {
-            avatar.setUrl(profile.avatar.large.url, isCircle = true)
-            avatar.setOnClickListener { onShowMyProfile() }
-            isPlus.isVisible = profile.is_plus_active
-            name.text = "${profile.first_name} ${profile.last_name}"
-            userType.text =
+            headerViewBinding.avatar.setUrl(profile.avatar.large.url, isCircle = true)
+            headerViewBinding.avatar.setOnClickListener { onShowMyProfile() }
+            headerViewBinding.isPlus.isVisible = profile.is_plus_active
+            headerViewBinding.name.text = "${profile.first_name} ${profile.last_name}"
+            headerViewBinding.userType.text =
                 if (appPreferences.getCurrentUserType() == UserType.EMPLOYER.type) getString(R.string.employer) else getString(
                     R.string.freelancer
                 )
@@ -384,7 +408,7 @@ class MainActivity : BaseActivity() {
     private val timerTask = object : TimerTask() {
         override fun run() {
             runOnUiThread {
-                if (navigation.checkedItem != navigation.menu.findItem(R.id.menu_threads)) viewModel.checkMessages()
+                if (binding.drawerLayout.navigation.checkedItem != binding.drawerLayout.navigation.menu.findItem(R.id.menu_threads)) viewModel.checkMessages()
             }
         }
     }

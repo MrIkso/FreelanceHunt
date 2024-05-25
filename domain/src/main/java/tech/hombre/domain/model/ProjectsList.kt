@@ -2,7 +2,7 @@ package tech.hombre.domain.model
 
 import android.os.Parcelable
 import com.github.vivchar.rendererrecyclerviewadapter.ViewModel
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 
 data class ProjectsList(
     val `data`: List<ProjectDetail.Data> = listOf(),

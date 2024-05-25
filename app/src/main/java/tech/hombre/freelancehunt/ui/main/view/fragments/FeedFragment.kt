@@ -6,7 +6,7 @@ import androidx.annotation.Keep
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.github.vivchar.rendererrecyclerviewadapter.*
-import kotlinx.android.synthetic.main.fragment_feed.*
+
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import tech.hombre.domain.model.FeedList
@@ -15,12 +15,13 @@ import tech.hombre.freelancehunt.common.FeedType
 import tech.hombre.freelancehunt.common.extensions.*
 import tech.hombre.freelancehunt.common.provider.SchemeParser
 import tech.hombre.freelancehunt.common.widgets.CustomImageView
+import tech.hombre.freelancehunt.databinding.FragmentFeedBinding
 import tech.hombre.freelancehunt.ui.base.*
 import tech.hombre.freelancehunt.ui.base.ViewState
 import tech.hombre.freelancehunt.ui.main.presentation.FeedViewModel
 import tech.hombre.freelancehunt.ui.main.presentation.MainPublicViewModel
 
-class FeedFragment : BaseFragment() {
+class FeedFragment : BaseFragment<FragmentFeedBinding>(FragmentFeedBinding::inflate) {
 
     private val viewModel: FeedViewModel by viewModel()
 
@@ -29,8 +30,6 @@ class FeedFragment : BaseFragment() {
     var items = FeedList()
 
     val adapter = RendererRecyclerViewAdapter()
-
-    override fun getLayout() = R.layout.fragment_feed
 
     override fun viewReady() {
         initList()
@@ -142,17 +141,18 @@ class FeedFragment : BaseFragment() {
     private fun subscribeToData() {
         viewModel.viewState.subscribe(this, ::handleViewState)
         viewModel.feedMarked.subscribe(this, ::handleFeedViewState)
-        viewModel.details.subscribe(this, {
+        viewModel.details.subscribe(this) {
             when (it) {
                 is Loading -> showLoading()
                 is Success -> {
                     hideLoading()
                     appNavigator.showProjectDetails(it.data.data)
                 }
+
                 is Error -> handleError(it.error.localizedMessage)
                 is NoInternetState -> showNoInternetError()
             }
-        })
+        }
     }
 
     private fun handleViewState(viewState: ViewState<FeedList>) {
@@ -172,27 +172,28 @@ class FeedFragment : BaseFragment() {
             }
             is Error -> handleError(viewState.error.localizedMessage)
             is NoInternetState -> showNoInternetError()
+            else -> {}
         }
     }
 
     private fun handleError(error: String) {
-        refresh.isRefreshing = false
+        binding.refresh.isRefreshing = false
         hideLoading()
-        showError(error, feedFragmentContainer)
+        showError(error, binding.feedFragmentContainer)
     }
 
     private fun showNoInternetError() {
         hideLoading()
-        snackbar(getString(R.string.no_internet_error_message), feedFragmentContainer)
+        snackbar(getString(R.string.no_internet_error_message), binding.feedFragmentContainer)
     }
 
 
     private fun showFeedList(feedList: FeedList) {
         hideLoading()
-        refresh.isRefreshing = false
+        binding.refresh.isRefreshing = false
 
-        list.layoutManager = LinearLayoutManager(context)
-        list.adapter = adapter
+        binding.list.layoutManager = LinearLayoutManager(context)
+        binding.list.adapter = adapter
 
         if (feedList.data.isNotEmpty()) {
             adapter.setItems(feedList.data)
@@ -206,7 +207,7 @@ class FeedFragment : BaseFragment() {
             items = feedList
         }
 
-        refresh.setOnRefreshListener {
+        binding.refresh.setOnRefreshListener {
             adapter.setItems(arrayListOf())
             viewModel.getFeedLists()
         }

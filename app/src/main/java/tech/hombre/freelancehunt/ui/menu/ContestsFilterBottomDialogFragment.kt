@@ -1,6 +1,5 @@
 package tech.hombre.freelancehunt.ui.menu
 
-
 import android.content.Context
 import android.os.Bundle
 import androidx.annotation.Keep
@@ -8,7 +7,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import kotlinx.android.synthetic.main.bottom_menu_contests_filter.*
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import tech.hombre.data.database.dao.SkillsDao
 import tech.hombre.domain.model.SkillList
@@ -16,12 +14,11 @@ import tech.hombre.freelancehunt.R
 import tech.hombre.freelancehunt.common.EXTRA_1
 import tech.hombre.freelancehunt.common.extensions.launch
 import tech.hombre.freelancehunt.common.extensions.subscribe
+import tech.hombre.freelancehunt.databinding.BottomMenuContestsFilterBinding
 import tech.hombre.freelancehunt.framework.app.AppHelper
 import tech.hombre.freelancehunt.ui.base.BaseBottomDialogFragment
 
-class ContestsFilterBottomDialogFragment : BaseBottomDialogFragment() {
-
-    override fun getLayout() = R.layout.bottom_menu_contests_filter
+class ContestsFilterBottomDialogFragment : BaseBottomDialogFragment<BottomMenuContestsFilterBinding>(BottomMenuContestsFilterBinding::inflate) {
 
     private val viewModel: ContestsFilterViewModel by viewModel()
 
@@ -45,7 +42,7 @@ class ContestsFilterBottomDialogFragment : BaseBottomDialogFragment() {
 
     private fun initViews() {
 
-        skillsList.setOnClickListener {
+        binding.skillsList.setOnClickListener {
             with(
                 AlertDialog.Builder(
                     requireContext(),
@@ -66,7 +63,7 @@ class ContestsFilterBottomDialogFragment : BaseBottomDialogFragment() {
             }
         }
 
-        buttonSubmit.setOnClickListener {
+        binding.buttonSubmit.setOnClickListener {
             val checked = arrayListOf<Int>()
             checkedSkills.forEachIndexed { index, b ->
                 if (b) {
@@ -103,10 +100,10 @@ class ContestsFilterBottomDialogFragment : BaseBottomDialogFragment() {
                     placeholder += skills[index].name + ","
                 }
             }
-            skillsList.text =
+            binding.skillsList.text =
                 placeholder.removeRange(placeholder.length - 1, placeholder.length)
         } else {
-            skillsList.text = getString(R.string.select)
+            binding.skillsList.text = getString(R.string.select)
         }
     }
 

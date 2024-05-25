@@ -1,18 +1,15 @@
 package tech.hombre.freelancehunt.ui.menu
 
-
 import android.content.Context
 import android.os.Bundle
 import androidx.annotation.Keep
-import kotlinx.android.synthetic.main.bottom_menu_create_thread.*
+
 import tech.hombre.freelancehunt.R
 import tech.hombre.freelancehunt.common.EXTRA_1
+import tech.hombre.freelancehunt.databinding.BottomMenuCreateThreadBinding
 import tech.hombre.freelancehunt.ui.base.BaseBottomDialogFragment
 
-
-class CreateThreadBottomDialogFragment : BaseBottomDialogFragment() {
-
-    override fun getLayout() = R.layout.bottom_menu_create_thread
+class CreateThreadBottomDialogFragment : BaseBottomDialogFragment<BottomMenuCreateThreadBinding>(BottomMenuCreateThreadBinding::inflate) {
 
     private var listener: OnCreateThreadListener? = null
 
@@ -22,11 +19,11 @@ class CreateThreadBottomDialogFragment : BaseBottomDialogFragment() {
         arguments?.let {
             profileId = it.getInt(EXTRA_1, -1)
 
-            buttonCreateThread.setOnClickListener {
+            binding.buttonCreateThread.setOnClickListener {
                 if (correctInputs()) {
                     listener?.onThreadCreated(
-                        subject.savedText.toString(),
-                        message.savedText.toString(),
+                        binding.subject.savedText.toString(),
+                        binding.message.savedText.toString(),
                         profileId
                     )
                     dismiss()
@@ -40,7 +37,7 @@ class CreateThreadBottomDialogFragment : BaseBottomDialogFragment() {
     }
 
     private fun correctInputs(): Boolean {
-        return subject.savedText.isNotEmpty() && message.savedText.isNotEmpty()
+        return binding.subject.savedText.isNotEmpty() && binding.message.savedText.isNotEmpty()
     }
 
     interface OnCreateThreadListener {

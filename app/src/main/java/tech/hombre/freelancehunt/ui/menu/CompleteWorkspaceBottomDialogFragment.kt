@@ -1,20 +1,18 @@
 package tech.hombre.freelancehunt.ui.menu
 
-
 import android.content.Context
 import android.os.Bundle
 import androidx.annotation.Keep
-import kotlinx.android.synthetic.main.bottom_menu_complete_workspace.*
 import tech.hombre.domain.model.CompleteGrades
 import tech.hombre.freelancehunt.R
 import tech.hombre.freelancehunt.common.EXTRA_1
 import tech.hombre.freelancehunt.common.EXTRA_2
 import tech.hombre.freelancehunt.common.utils.Utilities
+import tech.hombre.freelancehunt.databinding.BottomMenuCompleteWorkspaceBinding
 import tech.hombre.freelancehunt.ui.base.BaseBottomDialogFragment
 
-class CompleteWorkspaceBottomDialogFragment : BaseBottomDialogFragment() {
-
-    override fun getLayout() = R.layout.bottom_menu_complete_workspace
+class CompleteWorkspaceBottomDialogFragment :
+    BaseBottomDialogFragment<BottomMenuCompleteWorkspaceBinding>(BottomMenuCompleteWorkspaceBinding::inflate) {
 
     private var listener: OnCompleteDialogSubmitListener? = null
 
@@ -27,24 +25,24 @@ class CompleteWorkspaceBottomDialogFragment : BaseBottomDialogFragment() {
             ids = it.getInt(EXTRA_1, -1)
             isComplete = it.getBoolean(EXTRA_2, false)
 
-            qualityValue.filters = arrayOf(Utilities.InputFilterMinMax(1, 10))
-            professionalismValue.filters = arrayOf(Utilities.InputFilterMinMax(1, 10))
-            costValue.filters = arrayOf(Utilities.InputFilterMinMax(1, 10))
-            connectivityValue.filters = arrayOf(Utilities.InputFilterMinMax(1, 10))
-            scheduleValue.filters = arrayOf(Utilities.InputFilterMinMax(1, 10))
+            binding.qualityValue.filters = arrayOf(Utilities.InputFilterMinMax(1, 10))
+            binding.professionalismValue.filters = arrayOf(Utilities.InputFilterMinMax(1, 10))
+            binding.costValue.filters = arrayOf(Utilities.InputFilterMinMax(1, 10))
+            binding.connectivityValue.filters = arrayOf(Utilities.InputFilterMinMax(1, 10))
+            binding.scheduleValue.filters = arrayOf(Utilities.InputFilterMinMax(1, 10))
 
-            buttonSubmit.setOnClickListener {
+            binding.buttonSubmit.setOnClickListener {
                 if (correctInputs()) {
                     listener?.onCompleteDialogSubmit(
                         ids,
                         isComplete,
-                        text.savedText.toString(),
+                        binding.text.savedText.toString(),
                         CompleteGrades(
-                            qualityValue.text.toString().toInt(),
-                            professionalismValue.text.toString().toInt(),
-                            costValue.text.toString().toInt(),
-                            connectivityValue.text.toString().toInt(),
-                            scheduleValue.text.toString().toInt()
+                            binding.qualityValue.text.toString().toInt(),
+                            binding.professionalismValue.text.toString().toInt(),
+                            binding.costValue.text.toString().toInt(),
+                            binding.connectivityValue.text.toString().toInt(),
+                            binding.scheduleValue.text.toString().toInt()
                         )
                     )
                     dismiss()
@@ -58,7 +56,12 @@ class CompleteWorkspaceBottomDialogFragment : BaseBottomDialogFragment() {
     }
 
     private fun correctInputs(): Boolean {
-        return text.savedText.isNotEmpty() && !qualityValue.text.isNullOrEmpty() && !professionalismValue.text.isNullOrEmpty() && !costValue.text.isNullOrEmpty() && !connectivityValue.text.isNullOrEmpty() && !scheduleValue.text.isNullOrEmpty()
+        return binding.text.savedText.isNotEmpty() &&
+                !binding.qualityValue.text.isNullOrEmpty() &&
+                !binding.professionalismValue.text.isNullOrEmpty() &&
+                !binding.costValue.text.isNullOrEmpty() &&
+                !binding.connectivityValue.text.isNullOrEmpty() &&
+                !binding.scheduleValue.text.isNullOrEmpty()
     }
 
     interface OnCompleteDialogSubmitListener {
@@ -88,7 +91,10 @@ class CompleteWorkspaceBottomDialogFragment : BaseBottomDialogFragment() {
         @Keep
         val TAG = CompleteWorkspaceBottomDialogFragment::class.java.simpleName
 
-        fun newInstance(primaryId: Int, isComplete: Boolean): CompleteWorkspaceBottomDialogFragment {
+        fun newInstance(
+            primaryId: Int,
+            isComplete: Boolean
+        ): CompleteWorkspaceBottomDialogFragment {
             val fragment = CompleteWorkspaceBottomDialogFragment()
             val extra = Bundle()
             extra.putInt(EXTRA_1, primaryId)

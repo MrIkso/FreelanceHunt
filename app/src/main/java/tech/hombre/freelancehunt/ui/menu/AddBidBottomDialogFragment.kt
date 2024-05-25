@@ -9,20 +9,19 @@ import android.view.View
 import androidx.annotation.Keep
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
-import kotlinx.android.synthetic.main.bottom_menu_add_bid.*
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import tech.hombre.domain.model.MyBidsList
 import tech.hombre.domain.model.ProjectBid
 import tech.hombre.freelancehunt.R
 import tech.hombre.freelancehunt.common.*
+import tech.hombre.freelancehunt.common.extensions.snackbar
 import tech.hombre.freelancehunt.common.extensions.subscribe
+import tech.hombre.freelancehunt.databinding.BottomMenuAddBidBinding
 import tech.hombre.freelancehunt.ui.base.*
 import tech.hombre.freelancehunt.ui.menu.model.AddBidsViewModel
 
 
-class AddBidBottomDialogFragment : BaseBottomDialogFragment() {
-
-    override fun getLayout() = R.layout.bottom_menu_add_bid
+class AddBidBottomDialogFragment : BaseBottomDialogFragment<BottomMenuAddBidBinding>(BottomMenuAddBidBinding::inflate) {
 
     private var listener: OnBidAddedListener? = null
 
@@ -43,19 +42,19 @@ class AddBidBottomDialogFragment : BaseBottomDialogFragment() {
             isPlus = it.getBoolean(EXTRA_1)
             ids = it.getInt(EXTRA_2, -1)
             budget = it.getParcelable(EXTRA_3) ?: MyBidsList.Data.Attributes.Budget()
-            costValue.setText(budget.amount.toString())
+            binding.costValue.setText(budget.amount.toString())
             if (budget.currency.isNotBlank()) {
                 try {
-                    costType.setSelection(
+                    binding.costType.setSelection(
                         CurrencyType.valueOf(budget.currency).ordinal
                     )
                 } catch (e: IllegalArgumentException) {
-                    costType.setSelection(CurrencyType.UAH.ordinal)
+                    binding.costType.setSelection(CurrencyType.UAH.ordinal)
                 }
-                costType.isEnabled = false
+                binding.costType.isEnabled = false
             }
-            hiddenBid.isEnabled = isPlus
-            buttonAddBid.setOnClickListener {
+            binding.hiddenBid.isEnabled = isPlus
+            binding.buttonAddBid.setOnClickListener {
                 if (correctInputs()) {
                     viewModel.addNewProjectBid(
                         ids,
@@ -84,15 +83,16 @@ class AddBidBottomDialogFragment : BaseBottomDialogFragment() {
                 dismiss()
             }
             is Error -> handleError(viewState.error.localizedMessage)
+            is NoInternetState -> handleError(getString(R.string.no_internet_error_message))
         }
     }
 
     private fun hideLoading() {
-        progressBar.hide()
+        binding.progressBar.hide()
     }
 
     private fun showLoading() {
-        progressBar.show()
+        binding.progressBar.show()
     }
 
     private fun handleError(error: String) {
@@ -101,11 +101,11 @@ class AddBidBottomDialogFragment : BaseBottomDialogFragment() {
     }
 
     private fun correctInputs(): Boolean {
-        cost = costValue.text.toString().toIntOrNull() ?: 0
-        val currency = CurrencyType.values()[costType.selectedItemPosition]
+        cost = binding.costValue.text.toString().toIntOrNull() ?: 0
+        val currency = CurrencyType.values()[binding.costType.selectedItemPosition]
         budget = MyBidsList.Data.Attributes.Budget(cost, currency.currency)
-        day = days.text.toString().toIntOrNull() ?: 0
-        safe = SafeType.values()[safeType.selectedItemPosition]
+        day = binding.days.text.toString().toIntOrNull() ?: 0
+        safe = SafeType.values()[binding.safeType.selectedItemPosition]
         val costVerified: Boolean = when {
             currency == CurrencyType.UAH && cost < 200 -> {
                 showError(getString(R.string.safe_cost_minimal))
@@ -118,12 +118,12 @@ class AddBidBottomDialogFragment : BaseBottomDialogFragment() {
             else -> true
         }
         if (!costVerified) return false
-        comm = comment.savedText.toString()
+        comm = binding.comment.savedText.toString()
         if (comm.length < 60) {
             showError(getString(R.string.bid_comment_min))
             return false
         }
-        isHiddenBid = hiddenBid.isChecked
+        isHiddenBid = binding.hiddenBid.isChecked
         return !(!costVerified || day < 1 || cost < 1 || comm.isEmpty() || safe == null)
     }
 

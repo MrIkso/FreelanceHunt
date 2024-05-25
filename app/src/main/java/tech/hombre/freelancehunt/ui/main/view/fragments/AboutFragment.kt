@@ -3,25 +3,24 @@ package tech.hombre.freelancehunt.ui.main.view.fragments
 import android.content.Intent
 import android.net.Uri
 import androidx.annotation.Keep
-import kotlinx.android.synthetic.main.fragment_about.*
+
 import tech.hombre.freelancehunt.R
+import tech.hombre.freelancehunt.databinding.FragmentAboutBinding
 import tech.hombre.freelancehunt.ui.base.BaseFragment
 
 
-class AboutFragment : BaseFragment() {
-
-    override fun getLayout() = R.layout.fragment_about
+class AboutFragment : BaseFragment<FragmentAboutBinding>(FragmentAboutBinding::inflate) {
 
     override fun viewReady() {
-        buttonTelegram.setOnClickListener { showTelegram() }
-        buttonGithub.setOnClickListener {
+        binding.buttonTelegram.setOnClickListener { showTelegram() }
+        binding.buttonGithub.setOnClickListener {
             openUrl(
                 requireContext(),
                 getString(R.string.github_url)
             )
         }
-        buttonWeb.setOnClickListener { openUrl(requireContext(), getString(R.string.url)) }
-        buttonEmail.setOnClickListener { emailMe() }
+        binding.buttonWeb.setOnClickListener { openUrl(requireContext(), getString(R.string.url)) }
+        binding.buttonEmail.setOnClickListener { emailMe() }
     }
 
     private fun showTelegram() {

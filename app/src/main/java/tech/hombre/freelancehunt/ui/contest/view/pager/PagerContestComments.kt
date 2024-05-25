@@ -8,7 +8,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.github.vivchar.rendererrecyclerviewadapter.*
-import kotlinx.android.synthetic.main.fragment_pager_contest_comments.*
+
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import tech.hombre.domain.model.ContestComment
@@ -18,13 +18,14 @@ import tech.hombre.freelancehunt.common.UserType
 import tech.hombre.freelancehunt.common.extensions.*
 import tech.hombre.freelancehunt.common.widgets.CustomHtmlTextView
 import tech.hombre.freelancehunt.common.widgets.CustomImageView
+import tech.hombre.freelancehunt.databinding.FragmentPagerContestCommentsBinding
+
 import tech.hombre.freelancehunt.ui.base.*
 import tech.hombre.freelancehunt.ui.base.ViewState
 import tech.hombre.freelancehunt.ui.contest.presentation.ContestCommentsViewModel
 import tech.hombre.freelancehunt.ui.contest.presentation.ContestPublicViewModel
 
-class PagerContestComments : BaseFragment() {
-    override fun getLayout() = R.layout.fragment_pager_contest_comments
+class PagerContestComments : BaseFragment<FragmentPagerContestCommentsBinding>(FragmentPagerContestCommentsBinding::inflate) {
 
     private val viewModel: ContestCommentsViewModel by viewModel()
 
@@ -99,8 +100,8 @@ class PagerContestComments : BaseFragment() {
                 }
             )
         )
-        list.layoutManager = LinearLayoutManager(activity)
-        list.adapter = adapter
+        binding.list.layoutManager = LinearLayoutManager(activity)
+        binding.list.adapter = adapter
         adapter.registerRenderer(
             LoadMoreViewBinder(
                 R.layout.item_load_more
@@ -145,12 +146,12 @@ class PagerContestComments : BaseFragment() {
 
     private fun handleError(error: String) {
         hideLoading()
-        showError(error, commentsContainer)
+        showError(error, binding.commentsContainer)
     }
 
     private fun showNoInternetError() {
         hideLoading()
-        snackbar(getString(R.string.no_internet_error_message), commentsContainer)
+        snackbar(getString(R.string.no_internet_error_message), binding.commentsContainer)
     }
 
     private fun initBids(comments: List<ContestComment.Data>) {

@@ -8,7 +8,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.github.vivchar.rendererrecyclerviewadapter.*
-import kotlinx.android.synthetic.main.fragment_pager_project_comments.*
+
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import tech.hombre.domain.model.ProjectComment
@@ -17,13 +17,13 @@ import tech.hombre.freelancehunt.common.EXTRA_1
 import tech.hombre.freelancehunt.common.UserType
 import tech.hombre.freelancehunt.common.extensions.*
 import tech.hombre.freelancehunt.common.widgets.CustomImageView
+import tech.hombre.freelancehunt.databinding.FragmentPagerProjectCommentsBinding
 import tech.hombre.freelancehunt.ui.base.*
 import tech.hombre.freelancehunt.ui.base.ViewState
 import tech.hombre.freelancehunt.ui.project.presentation.ProjectCommentsViewModel
 import tech.hombre.freelancehunt.ui.project.presentation.ProjectPublicViewModel
 
-class PagerProjectComments : BaseFragment() {
-    override fun getLayout() = R.layout.fragment_pager_project_comments
+class PagerProjectComments : BaseFragment<FragmentPagerProjectCommentsBinding>(FragmentPagerProjectCommentsBinding::inflate) {
 
     private val viewModel: ProjectCommentsViewModel by viewModel()
 
@@ -94,8 +94,8 @@ class PagerProjectComments : BaseFragment() {
                 }
             )
         )
-        list.layoutManager = LinearLayoutManager(activity)
-        list.adapter = adapter
+        binding.list.layoutManager = LinearLayoutManager(activity)
+        binding.list.adapter = adapter
     }
 
     private fun subscribeToData() {
@@ -135,12 +135,12 @@ class PagerProjectComments : BaseFragment() {
 
     private fun handleError(error: String) {
         hideLoading()
-        showError(error, commentsContainer)
+        showError(error, binding.commentsContainer)
     }
 
     private fun showNoInternetError() {
         hideLoading()
-        snackbar(getString(R.string.no_internet_error_message), commentsContainer)
+        snackbar(getString(R.string.no_internet_error_message), binding.commentsContainer)
     }
 
     private fun initBids(comments: List<ProjectComment.Data>) {

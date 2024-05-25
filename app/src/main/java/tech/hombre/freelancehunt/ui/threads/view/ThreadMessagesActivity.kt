@@ -11,8 +11,6 @@ import android.view.MenuItem
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.github.vivchar.rendererrecyclerviewadapter.*
-import kotlinx.android.synthetic.main.activity_thread_messages.*
-import kotlinx.android.synthetic.main.appbar.*
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import tech.hombre.domain.model.ThreadMessageList
 import tech.hombre.domain.model.ThreadMessageMy
@@ -26,6 +24,7 @@ import tech.hombre.freelancehunt.common.widgets.filepicker.controller.DialogSele
 import tech.hombre.freelancehunt.common.widgets.filepicker.model.DialogConfigs
 import tech.hombre.freelancehunt.common.widgets.filepicker.model.DialogProperties
 import tech.hombre.freelancehunt.common.widgets.filepicker.view.FilePickerDialog
+import tech.hombre.freelancehunt.databinding.ActivityThreadMessagesBinding
 import tech.hombre.freelancehunt.ui.base.*
 import tech.hombre.freelancehunt.ui.base.ViewState
 import tech.hombre.freelancehunt.ui.threads.presentation.ThreadMessagesViewModel
@@ -34,7 +33,7 @@ import java.net.URLEncoder
 import java.util.*
 
 
-class ThreadMessagesActivity : BaseActivity() {
+class ThreadMessagesActivity : BaseActivity<ActivityThreadMessagesBinding>(ActivityThreadMessagesBinding::inflate) {
 
     private val viewModel: ThreadMessagesViewModel by viewModel()
 
@@ -58,8 +57,7 @@ class ThreadMessagesActivity : BaseActivity() {
     private var isUploading = false
 
     override fun viewReady() {
-        setContentView(R.layout.activity_thread_messages)
-        setSupportActionBar(toolbar)
+        setSupportActionBar(binding.appbar.toolbar)
         setTitle(R.string.thread_view)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         intent?.extras?.let {
@@ -73,19 +71,19 @@ class ThreadMessagesActivity : BaseActivity() {
     }
 
     private fun initViews() {
-        attach.setOnClickListener {
+        binding.attach.setOnClickListener {
             if (!isUploading) showSelectFileDialog()
         }
-        send.setOnClickListener {
-            list.hideKeyboard()
+        binding.send.setOnClickListener {
+            binding.list.hideKeyboard()
             if (correctInputs()) {
-                viewModel.sendMessage(threadId, editText.savedText.toString())
+                viewModel.sendMessage(threadId, binding.editText.savedText.toString())
             }
         }
     }
 
     private fun correctInputs(): Boolean {
-        return editText.savedText.isNotEmpty()
+        return binding.editText.savedText.isNotEmpty()
     }
 
     override fun onSupportNavigateUp(): Boolean {
@@ -114,7 +112,7 @@ class ThreadMessagesActivity : BaseActivity() {
 
     private fun handleViewState(viewState: ViewState<ThreadMessageList>) {
         when (viewState) {
-            is Loading -> showLoading(progressBar)
+            is Loading -> showLoading(binding.appbar.progressBar)
             is Success -> initMessages(viewState.data.data)
             is Error -> handleError(viewState.error.localizedMessage)
             is NoInternetState -> showNoInternetError()
@@ -124,6 +122,7 @@ class ThreadMessagesActivity : BaseActivity() {
     private fun handleMessageViewState(viewState: ViewState<ThreadMessageList.Data>) {
         when (viewState) {
             is Success -> addMessage(viewState.data)
+            else -> {}
         }
     }
 
@@ -134,17 +133,18 @@ class ThreadMessagesActivity : BaseActivity() {
                 viewState.error.localizedMessage ?: getString(R.string.internet_error_message)
             )
             is NoInternetState -> showNoInternetError()
+            else -> {}
         }
         isUploading = false
-        attachProgress.invisible()
+        binding.attachProgress.invisible()
     }
 
     private fun addMessage(message: ThreadMessageList.Data) {
-        editText.setText("")
+        binding.editText.setText("")
         messagesGroup.add(ThreadMessageMy(message))
         adapter.setItems(messagesGroup)
-        list.postDelayed(
-            { list.scrollToPosition(adapter.itemCount - 1) },
+        binding.list.postDelayed(
+            { binding.list.scrollToPosition(adapter.itemCount - 1) },
             100
         )
 
@@ -153,8 +153,8 @@ class ThreadMessagesActivity : BaseActivity() {
     private fun addAttachMessage(message: ThreadMessageList.Data) {
         messagesGroup.add(ThreadMessageMy(message))
         adapter.setItems(messagesGroup)
-        list.postDelayed(
-            { list.scrollToPosition(adapter.itemCount - 1) },
+        binding.list.postDelayed(
+            { binding.list.scrollToPosition(adapter.itemCount - 1) },
             100
         )
     }
@@ -313,10 +313,10 @@ class ThreadMessagesActivity : BaseActivity() {
                 }
             )
         )
-        list.layoutManager = LinearLayoutManager(this).apply { stackFromEnd = true }
-        list.adapter = adapter
+        binding.list.layoutManager = LinearLayoutManager(this).apply { stackFromEnd = true }
+        binding.list.adapter = adapter
 
-        refresh.setOnRefreshListener {
+        binding.refresh.setOnRefreshListener {
             viewModel.getMessages(threadId)
         }
 
@@ -324,8 +324,8 @@ class ThreadMessagesActivity : BaseActivity() {
     }
 
     private fun initMessages(messages: List<ThreadMessageList.Data>) {
-        hideLoading(progressBar)
-        refresh.isRefreshing = false
+        hideLoading(binding.appbar.progressBar)
+        binding.refresh.isRefreshing = false
         this.messages = messages as ArrayList<ThreadMessageList.Data>
         messagesGroup = messages.map {
             if (it.attributes.participants.from.login == getCurrentUser()) ThreadMessageMy(it) else ThreadMessageOther(
@@ -336,13 +336,13 @@ class ThreadMessagesActivity : BaseActivity() {
     }
 
     private fun handleError(error: String) {
-        hideLoading(progressBar)
+        hideLoading(binding.appbar.progressBar)
         showError(error)
     }
 
     private fun showNoInternetError() {
-        hideLoading(progressBar)
-        snackbar(getString(R.string.no_internet_error_message), threadActivityContainer)
+        hideLoading(binding.appbar.progressBar)
+        snackbar(getString(R.string.no_internet_error_message), binding.threadActivityContainer)
     }
 
     private val timerTask = object : TimerTask() {
@@ -385,14 +385,14 @@ class ThreadMessagesActivity : BaseActivity() {
                 override fun onSelectedFilePaths(files: Array<String?>) {
                     val path = files[0]
                     path?.let {
-                        attachProgress.visible()
+                        binding.attachProgress.visible()
                         isUploading = true
                         viewModel.uploadAttach(
                             threadId,
                             path,
                             path.substringAfterLast("/")
                         ) { progress ->
-                            attachProgress.progress = (progress * 100.0).toInt()
+                            binding.attachProgress.progress = (progress * 100.0).toInt()
                         }
                     }
                 }
@@ -442,14 +442,14 @@ class ThreadMessagesActivity : BaseActivity() {
                     )
                     return
                 }
-                attachProgress.visible()
+                binding.attachProgress.visible()
                 isUploading = true
                 viewModel.uploadAttach(
                     uri,
                     threadId,
                     URLEncoder.encode(filename, "utf-8")
                 ) { progress ->
-                    attachProgress.progress = (progress * 100.0).toInt()
+                    binding.attachProgress.progress = (progress * 100.0).toInt()
                 }
             }
         }

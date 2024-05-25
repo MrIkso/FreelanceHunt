@@ -7,7 +7,9 @@
     android:fitsSystemWindows="true"
     tools:context=".ui.project.view.NewProjectActivity">
 
-    <include layout="@layout/appbar" />
+    <include
+        android:id="@+id/appbar"
+        layout="@layout/appbar" />
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scrollView"

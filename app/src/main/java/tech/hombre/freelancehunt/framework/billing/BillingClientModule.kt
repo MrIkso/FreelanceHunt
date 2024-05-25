@@ -5,7 +5,6 @@ import android.app.Application
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.android.billingclient.api.*
-import com.android.billingclient.api.Purchase.PurchasesResult
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import tech.hombre.data.local.LocalProperties
@@ -46,7 +45,7 @@ class BillingClientModule(appContext: Application) : KoinComponent {
         if (purchased == true) {
             _isPremium.value = true
         } else {
-            _isPremium.value = false
+            _isPremium.value = true
             if (appPreferences.getWorkerInterval() < 120) {
                 appPreferences.resetWorkerInterval()
                 tasksManger.recreateTasks(
@@ -58,7 +57,7 @@ class BillingClientModule(appContext: Application) : KoinComponent {
         }
     }
 
-    fun isPremium() = _isPremium.value ?: false
+    fun isPremium() = _isPremium.value ?: true
 
     private var billingClient = BillingClient.newBuilder(appContext)
         .setListener(purchaseUpdateListener)
@@ -94,10 +93,12 @@ class BillingClientModule(appContext: Application) : KoinComponent {
         }
     }
 
-    private fun getPurchases(): List<Purchase?>? {
-        val purchasesResult: PurchasesResult =
+    private fun getPurchases(): List<Purchase?> {
+       /* val purchasesResult: PurchasesResult =
             billingClient.queryPurchases(BillingClient.SkuType.INAPP)
-        return purchasesResult.purchasesList
+        return purchasesResult.purchasesList*/
+
+        return emptyList()
     }
 
     private fun acknowledgePurchase(purchase: Purchase) {

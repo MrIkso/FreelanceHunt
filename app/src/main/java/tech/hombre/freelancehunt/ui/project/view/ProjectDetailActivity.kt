@@ -6,8 +6,6 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import com.google.android.material.tabs.TabLayout
-import kotlinx.android.synthetic.main.activity_project_detail.*
-import kotlinx.android.synthetic.main.placeholder_project.*
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import tech.hombre.domain.model.Countries
 import tech.hombre.domain.model.MyBidsList
@@ -16,6 +14,7 @@ import tech.hombre.domain.model.ProjectDetail
 import tech.hombre.freelancehunt.R
 import tech.hombre.freelancehunt.common.*
 import tech.hombre.freelancehunt.common.extensions.*
+import tech.hombre.freelancehunt.databinding.ActivityProjectDetailBinding
 import tech.hombre.freelancehunt.ui.base.*
 import tech.hombre.freelancehunt.ui.menu.AddBidBottomDialogFragment
 import tech.hombre.freelancehunt.ui.menu.BottomMenuBuilder
@@ -25,7 +24,7 @@ import tech.hombre.freelancehunt.ui.project.view.pager.PagerProjectBids
 import tech.hombre.freelancehunt.ui.project.view.pager.PagerProjectComments
 import tech.hombre.freelancehunt.ui.project.view.pager.PagerProjectOverview
 
-class ProjectDetailActivity : BaseActivity(), AddBidBottomDialogFragment.OnBidAddedListener {
+class ProjectDetailActivity : BaseActivity<ActivityProjectDetailBinding>(ActivityProjectDetailBinding::inflate), AddBidBottomDialogFragment.OnBidAddedListener {
 
     private val viewModel: ProjectDetailViewModel by viewModel()
 
@@ -40,8 +39,7 @@ class ProjectDetailActivity : BaseActivity(), AddBidBottomDialogFragment.OnBidAd
     private var isOnlyForPlus = false
 
     override fun viewReady() {
-        setContentView(R.layout.activity_project_detail)
-        setSupportActionBar(toolbar)
+        setSupportActionBar(binding.toolbar)
         setTitle(R.string.project_view)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         intent?.extras?.let {
@@ -78,14 +76,14 @@ class ProjectDetailActivity : BaseActivity(), AddBidBottomDialogFragment.OnBidAd
         viewModel.viewState.subscribe(this, ::handleViewState)
         viewModel.countries.subscribe(this, {
             countries = it
-            hideLoading(progressBar)
+            hideLoading(binding.progressBar)
         })
         viewModel.setCountries()
     }
 
     private fun handleViewState(viewState: ViewState<ProjectDetail>) {
         when (viewState) {
-            is Loading -> showLoading(progressBar)
+            is Loading -> showLoading(binding.progressBar)
             is Success -> initProjectDetails(viewState.data.data)
             is Error -> {
                 handleError(viewState.error.localizedMessage)
@@ -97,62 +95,62 @@ class ProjectDetailActivity : BaseActivity(), AddBidBottomDialogFragment.OnBidAd
 
     private fun hideShowFab(position: Int) {
         when (position) {
-            0 -> fab.hide()
+            0 -> binding.fab.hide()
             1 -> {
                 if (isOnlyForPlus && appPreferences.getCurrentUserProfile()?.is_plus_active != true) {
-                    fab.hide()
+                    binding.fab.hide()
                     return
                 }
                 val status =
                     ProjectStatus.values().find { it.id == statusId }
                 if (appPreferences.getCurrentUserType() == UserType.FREELANCER.type && status == ProjectStatus.OPEN_FOR_PROPOSALS) {
-                    fab.setImageResource(R.drawable.bid)
-                    fab.show()
+                    binding.fab.setImageResource(R.drawable.bid)
+                    binding.fab.show()
 
-                } else fab.hide()
+                } else binding.fab.hide()
             }
-            2 -> fab.hide()
+            2 -> binding.fab.hide()
         }
     }
 
     private fun initProjectDetails(details: ProjectDetail.Data) {
-        hideLoading(progressBar)
+        hideLoading(binding.progressBar)
 
-        preview.visibility = View.INVISIBLE
-        content.visible()
+        binding.placeholderProject.preview.visibility = View.INVISIBLE
+        binding.content.visible()
 
         projectUrl = details.links.self.web
 
         isOnlyForPlus = details.attributes.is_only_for_plus
         statusId = details.attributes.status.id
 
-        toolbar.subtitle = details.attributes.name
+        binding.toolbar.subtitle = details.attributes.name
 
-        isplus.visibility = details.attributes.is_only_for_plus.toVisibleState()
-        premium.visibility = details.attributes.is_premium.toVisibleState()
+        binding.isplus.visibility = details.attributes.is_only_for_plus.toVisibleState()
+        binding.premium.visibility = details.attributes.is_premium.toVisibleState()
 
-        safe.text = getTitleBySafeType(
+        binding.safe.text = getTitleBySafeType(
             this,
             SafeType.values().find { it.type == details.attributes.safe_type }
                 ?: SafeType.EMPLOYER)
 
-        isremote.visibility = details.attributes.is_remote_job.toVisibleState()
-        name.text = details.attributes.name
-        status.text = details.attributes.status.name
+        binding.isremote.visibility = details.attributes.is_remote_job.toVisibleState()
+        binding.name.text = details.attributes.name
+        binding.status.text = details.attributes.status.name
 
         if (details.attributes.budget != null) {
-            budget.text =
+            binding.budget.text =
                 "${details.attributes.budget!!.amount} ${currencyToChar(details.attributes.budget!!.currency)}"
-        } else budget.text = getString(R.string.budget_nan)
+        } else binding.budget.text = getString(R.string.budget_nan)
 
-        expiredAt.text = details.attributes.expired_at.parseFullDate(true).getTimeAgo()
+        binding.expiredAt.text = details.attributes.expired_at.parseFullDate(true).getTimeAgo()
 
-        expiredAt.setOnClickListener {
+        binding.expiredAt.setOnClickListener {
             toast(details.attributes.expired_at.parseFullDate(true).toString())
         }
 
-        fab.setOnClickListener {
-            when (tabs.selectedTabPosition) {
+        binding.fab.setOnClickListener {
+            when (binding.tabs.selectedTabPosition) {
                 1 -> {
                     if (details.attributes.is_only_for_plus && appPreferences.getCurrentUserProfile()?.is_plus_active == true)
                         BottomMenuBuilder(
@@ -192,16 +190,16 @@ class ProjectDetailActivity : BaseActivity(), AddBidBottomDialogFragment.OnBidAd
             false
         )
 
-        tabs.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+        binding.tabs.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabReselected(tab: TabLayout.Tab?) {
-                containerScroller.scrollTo(0, 0)
+                binding. containerScroller.scrollTo(0, 0)
             }
 
             override fun onTabUnselected(tab: TabLayout.Tab?) {
             }
 
             override fun onTabSelected(tab: TabLayout.Tab?) {
-                containerScroller.scrollTo(0, 0)
+                binding.containerScroller.scrollTo(0, 0)
                 tab?.position?.let {
                     hideShowFab(it)
                     when (it) {
@@ -235,14 +233,14 @@ class ProjectDetailActivity : BaseActivity(), AddBidBottomDialogFragment.OnBidAd
     }
 
     private fun handleError(error: String) {
-        hideLoading(progressBar)
+        hideLoading(binding.progressBar)
         showError(error)
     }
 
 
     private fun showNoInternetError() {
-        hideLoading(progressBar)
-        snackbar(getString(R.string.no_internet_error_message), projectActivityContainer)
+        hideLoading(binding.progressBar)
+        snackbar(getString(R.string.no_internet_error_message), binding.projectActivityContainer)
     }
 
     override fun onBidAdded(

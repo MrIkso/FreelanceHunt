@@ -8,7 +8,7 @@ import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.github.vivchar.rendererrecyclerviewadapter.*
-import kotlinx.android.synthetic.main.fragment_pager_project_bids.*
+
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import tech.hombre.domain.model.ProjectBid
@@ -16,6 +16,7 @@ import tech.hombre.freelancehunt.R
 import tech.hombre.freelancehunt.common.*
 import tech.hombre.freelancehunt.common.extensions.*
 import tech.hombre.freelancehunt.common.widgets.CustomImageView
+import tech.hombre.freelancehunt.databinding.FragmentPagerProjectBidsBinding
 import tech.hombre.freelancehunt.framework.app.ViewHelper.getColorAttr
 import tech.hombre.freelancehunt.ui.base.*
 import tech.hombre.freelancehunt.ui.base.ViewState
@@ -28,9 +29,8 @@ import tech.hombre.freelancehunt.ui.project.presentation.ProjectBidsViewModel
 import tech.hombre.freelancehunt.ui.project.presentation.ProjectPublicViewModel
 import java.util.*
 
-class PagerProjectBids : BaseFragment(), ListMenuBottomDialogFragment.BottomListMenuListener,
+class PagerProjectBids : BaseFragment<FragmentPagerProjectBidsBinding>(FragmentPagerProjectBidsBinding::inflate), ListMenuBottomDialogFragment.BottomListMenuListener,
     ChooseBidBottomDialogFragment.OnChooseBidListener {
-    override fun getLayout() = R.layout.fragment_pager_project_bids
 
     private val viewModel: ProjectBidsViewModel by viewModel()
 
@@ -185,16 +185,16 @@ class PagerProjectBids : BaseFragment(), ListMenuBottomDialogFragment.BottomList
                 }
             )
         )
-        list.layoutManager = LinearLayoutManager(activity)
-        list.adapter = adapter
+        binding.list.layoutManager = LinearLayoutManager(activity)
+        binding.list.adapter = adapter
 
-        bidsRevoked.setOnClickListener {
+        binding.bidsRevoked.setOnClickListener {
             setFilter("revoked")
         }
-        bidsActive.setOnClickListener {
+        binding.bidsActive.setOnClickListener {
             setFilter("active")
         }
-        bidsRejected.setOnClickListener {
+        binding.bidsRejected.setOnClickListener {
             setFilter("rejected")
         }
 
@@ -209,17 +209,18 @@ class PagerProjectBids : BaseFragment(), ListMenuBottomDialogFragment.BottomList
     private fun subscribeToData() {
         viewModel.viewState.subscribe(this, ::handleViewState)
         viewModel.bidAction.subscribe(this, ::handleBidAction)
-        freelancerViewModel.viewState.subscribe(this, {
-            when (it) {
+        freelancerViewModel.viewState.subscribe(this) { viewState ->
+            when (viewState) {
                 is Loading -> showLoading()
                 is Success -> {
                     hideLoading()
-                    appNavigator.showFreelancerDetails(it.data.data)
+                    appNavigator.showFreelancerDetails(viewState.data.data)
                 }
-                is Error -> handleError(it.error.localizedMessage)
+
+                is Error -> handleError(viewState.error.localizedMessage)
                 is NoInternetState -> showNoInternetError()
             }
-        })
+        }
     }
 
     private fun handleViewState(viewState: ViewState<ProjectBid>) {
@@ -237,6 +238,9 @@ class PagerProjectBids : BaseFragment(), ListMenuBottomDialogFragment.BottomList
             is Success -> {
                 updateBid(viewState.data)
             }
+            is Error -> handleError(viewState.error.localizedMessage)
+            is NoInternetState -> showNoInternetError()
+            is Loading -> showLoading()
         }
     }
 
@@ -252,17 +256,17 @@ class PagerProjectBids : BaseFragment(), ListMenuBottomDialogFragment.BottomList
     private fun addBid(bid: ProjectBid.Data) {
         items.add(0, bid)
         adapter.setItems(items)
-        snackbar(getString(R.string.bid_add_success), bidsContainer)
+        snackbar(getString(R.string.bid_add_success),  binding.bidsContainer)
     }
 
     private fun handleError(error: String) {
         hideLoading()
-        showError(error, bidsContainer)
+        showError(error,  binding.bidsContainer)
     }
 
     private fun showNoInternetError() {
         hideLoading()
-        snackbar(getString(R.string.no_internet_error_message), bidsContainer)
+        snackbar(getString(R.string.no_internet_error_message),  binding.bidsContainer)
     }
 
     private fun initBids(bids: List<ProjectBid.Data>) {
